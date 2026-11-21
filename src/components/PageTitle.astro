@@ -1,0 +1,330 @@
+---
+import Default from '@astrojs/starlight/components/PageTitle.astro';
+
+const { entry } = Astro.locals.starlightRoute;
+// `fillShell()` in `scripts/shell.mjs` replaces both markers with the paths of the note.
+const isNote = entry.id === 'notespathmarker';
+const rawUrl = '/notesrawurlmarker';
+const projectPath = 'notesprojectpathmarker';
+---
+
+<div class="notes-page-heading">
+  <Default {...Astro.props} />
+  {isNote && (
+    <div
+      class="notes-copy-actions"
+      data-note-actions
+      data-note-raw-url={rawUrl}
+      data-note-project-path={projectPath}
+    >
+      <div class="notes-copy-control">
+        <button class="notes-copy-primary" type="button" data-note-copy="markdown">
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <rect width="13" height="13" x="8" y="8" rx="2"></rect>
+            <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path>
+          </svg>
+          <span data-note-copy-label>Copy page</span>
+        </button>
+        <details class="notes-copy-dropdown">
+          <summary aria-label="Show copy options" title="Show copy options">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"></path></svg>
+          </summary>
+          <div class="notes-copy-menu">
+            <button type="button" data-note-copy="markdown">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <rect width="13" height="13" x="8" y="8" rx="2"></rect>
+                <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path>
+              </svg>
+              <span>
+                <strong>Copy Markdown</strong>
+                <small>Copy note content as text</small>
+              </span>
+            </button>
+            <button type="button" data-note-copy="path" title={projectPath}>
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path>
+                <path d="M14 2v6h6M8 13h8M8 17h8"></path>
+              </svg>
+              <span>
+                <strong>Copy file path</strong>
+                <small>{projectPath}</small>
+              </span>
+            </button>
+            <a href={rawUrl}>
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path>
+                <path d="M14 2v6h6M9 18v-5l2 2 2-2v5"></path>
+              </svg>
+              <span>
+                <strong>Open Markdown</strong>
+                <small>{rawUrl}</small>
+              </span>
+            </a>
+          </div>
+        </details>
+      </div>
+      <span class="notes-copy-status" data-note-copy-status aria-live="polite"></span>
+    </div>
+  )}
+</div>
+
+<script>
+  async function copyText(value: string) {
+    if (!navigator.clipboard?.writeText) throw new Error('Clipboard access is unavailable');
+    await navigator.clipboard.writeText(value);
+  }
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>('.notes-code-copy')) {
+    let resetTimer: number | undefined;
+    button.addEventListener('click', async () => {
+      const code = button.parentElement?.querySelector('pre')?.textContent ?? '';
+      try {
+        await copyText(code);
+        button.dataset.copied = '';
+        window.clearTimeout(resetTimer);
+        resetTimer = window.setTimeout(() => delete button.dataset.copied, 1500);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  }
+
+  for (const actions of document.querySelectorAll<HTMLElement>('[data-note-actions]')) {
+    const rawUrl = actions.dataset.noteRawUrl;
+    const projectPath = actions.dataset.noteProjectPath;
+    const dropdown = actions.querySelector<HTMLDetailsElement>('.notes-copy-dropdown');
+    const mainLabel = actions.querySelector<HTMLElement>('[data-note-copy-label]');
+    const status = actions.querySelector<HTMLElement>('[data-note-copy-status]');
+    const buttons = [...actions.querySelectorAll<HTMLButtonElement>('[data-note-copy]')];
+    let resetTimer: number | undefined;
+
+    const report = (message: string, label: string) => {
+      if (status) status.textContent = message;
+      if (mainLabel) mainLabel.textContent = label;
+      window.clearTimeout(resetTimer);
+      resetTimer = window.setTimeout(() => {
+        if (mainLabel) mainLabel.textContent = 'Copy page';
+        if (status) status.textContent = '';
+      }, 1800);
+    };
+
+    for (const button of buttons) {
+      button.addEventListener('click', async () => {
+        try {
+          for (const candidate of buttons) candidate.disabled = true;
+          if (button.dataset.noteCopy === 'path') {
+            if (!projectPath) throw new Error('Note path is unavailable');
+            await copyText(projectPath);
+            report('Copied note file path.', 'Copied path');
+          } else {
+            if (!rawUrl) throw new Error('Raw note URL is unavailable');
+            const response = await fetch(rawUrl, { cache: 'no-store', headers: { Accept: 'text/plain' } });
+            if (!response.ok) throw new Error(`Raw note request failed with ${response.status}`);
+            await copyText(await response.text());
+            report('Copied note content as Markdown.', 'Copied Markdown');
+          }
+          dropdown?.removeAttribute('open');
+        } catch (error) {
+          console.error(error);
+          report('Could not copy. Check browser clipboard permissions.', 'Copy failed');
+        } finally {
+          for (const candidate of buttons) candidate.disabled = false;
+        }
+      });
+    }
+
+    document.addEventListener('click', (event) => {
+      if (!actions.contains(event.target as Node)) dropdown?.removeAttribute('open');
+    });
+    dropdown?.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      dropdown.removeAttribute('open');
+      dropdown.querySelector('summary')?.focus();
+    });
+  }
+</script>
+
+<style>
+  .notes-page-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .notes-page-heading :global(h1) {
+    min-width: 0;
+  }
+
+  .notes-copy-actions {
+    position: relative;
+    z-index: 4;
+    flex: 0 0 auto;
+    margin-block-start: 1rem;
+  }
+
+  .notes-copy-control {
+    display: flex;
+  }
+
+  .notes-copy-primary,
+  .notes-copy-dropdown summary {
+    display: inline-flex;
+    height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--sl-color-gray-5);
+    background: var(--sl-color-bg-nav);
+    color: var(--sl-color-text);
+    cursor: pointer;
+    font: 500 var(--sl-text-sm) / 1 var(--__sl-font);
+  }
+
+  .notes-copy-primary {
+    gap: 0.45rem;
+    padding-inline: 0.8rem;
+    border-radius: 0.55rem 0 0 0.55rem;
+  }
+
+  .notes-copy-dropdown summary {
+    width: 2.5rem;
+    margin-inline-start: -1px;
+    border-radius: 0 0.55rem 0.55rem 0;
+    list-style: none;
+  }
+
+  .notes-copy-dropdown summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .notes-copy-primary:hover,
+  .notes-copy-primary:focus-visible,
+  .notes-copy-dropdown summary:hover,
+  .notes-copy-dropdown summary:focus-visible {
+    position: relative;
+    z-index: 1;
+    border-color: var(--sl-color-accent);
+    background: var(--sl-color-accent-low);
+    color: var(--sl-color-accent-high);
+  }
+
+  .notes-copy-primary:focus-visible,
+  .notes-copy-dropdown summary:focus-visible,
+  .notes-copy-menu button:focus-visible,
+  .notes-copy-menu a:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+
+  .notes-copy-primary:disabled,
+  .notes-copy-menu button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+  }
+
+  svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    flex: 0 0 auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+  }
+
+  .notes-copy-dropdown[open] summary svg {
+    transform: rotate(180deg);
+  }
+
+  .notes-copy-menu {
+    position: absolute;
+    inset-block-start: calc(100% + 0.5rem);
+    inset-inline-end: 0;
+    width: min(25rem, calc(100vw - 2rem));
+    overflow: hidden;
+    padding: 0.35rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.75rem;
+    background: var(--sl-color-bg-nav);
+    box-shadow: 0 0.75rem 2rem color-mix(in srgb, var(--sl-color-black) 22%, transparent);
+  }
+
+  .notes-copy-menu button,
+  .notes-copy-menu a {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.7rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--sl-color-text);
+    cursor: pointer;
+    text-align: start;
+    text-decoration: none;
+  }
+
+  .notes-copy-menu button:hover,
+  .notes-copy-menu button:focus-visible,
+  .notes-copy-menu a:hover,
+  .notes-copy-menu a:focus-visible {
+    background: var(--sl-color-gray-6);
+  }
+
+  .notes-copy-menu :is(button, a) > svg {
+    width: 1.3rem;
+    height: 1.3rem;
+    margin-block-start: 0.1rem;
+  }
+
+  .notes-copy-menu :is(button, a) > span {
+    min-width: 0;
+  }
+
+  .notes-copy-menu strong,
+  .notes-copy-menu small {
+    display: block;
+  }
+
+  .notes-copy-menu strong {
+    font-size: var(--sl-text-sm);
+    font-weight: 500;
+    line-height: 1.25;
+  }
+
+  .notes-copy-menu small {
+    overflow-wrap: anywhere;
+    margin-block-start: 0.2rem;
+    color: var(--sl-color-gray-2);
+    font-family: var(--__sl-font-mono);
+    font-size: var(--sl-text-xs);
+    line-height: 1.4;
+  }
+
+  .notes-copy-status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 40rem) {
+    .notes-page-heading {
+      display: block;
+    }
+
+    .notes-copy-actions {
+      width: max-content;
+      max-width: 100%;
+      margin-block-start: 0.75rem;
+    }
+
+    .notes-copy-menu {
+      inset-inline: 0 auto;
+    }
+  }
+</style>

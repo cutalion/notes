@@ -1,0 +1,412 @@
+---
+import Default from '@astrojs/starlight/components/Head.astro';
+---
+
+<Default {...Astro.props}><slot /></Default>
+
+<script>
+  const collapseKeys = ['mainSideBarCollapsed', 'rightSideBarCollapsed'];
+  const sidebarWidths = {
+    left: {
+      storageKey: 'notes:leftSidebarWidth',
+      cssProperty: '--notes-left-sidebar-width',
+      min: 224,
+      max: 576,
+    },
+    right: {
+      storageKey: 'notes:rightSidebarWidth',
+      cssProperty: '--notes-right-sidebar-width',
+      min: 192,
+      max: 512,
+    },
+  } as const;
+
+  for (const key of collapseKeys) {
+    const persisted = localStorage.getItem(`notes:${key}`);
+    if (persisted !== null) sessionStorage.setItem(key, persisted);
+  }
+
+  for (const settings of Object.values(sidebarWidths)) {
+    const persisted = Number(localStorage.getItem(settings.storageKey));
+    if (Number.isFinite(persisted) && persisted >= settings.min && persisted <= settings.max) {
+      document.documentElement.style.setProperty(settings.cssProperty, `${persisted}px`);
+    }
+  }
+
+  function persistCollapseState() {
+    setTimeout(() => {
+      for (const key of collapseKeys) {
+        const value = sessionStorage.getItem(key);
+        if (value !== null) localStorage.setItem(`notes:${key}`, value);
+      }
+    }, 0);
+  }
+
+  function enhanceToggle(selector: string, label: string) {
+    const toggle = document.querySelector<HTMLElement>(selector);
+    if (!toggle) return;
+    toggle.setAttribute('role', 'button');
+    toggle.setAttribute('tabindex', '0');
+    toggle.setAttribute('aria-label', label);
+    toggle.addEventListener('click', persistCollapseState);
+    toggle.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        toggle.click();
+      }
+    });
+  }
+
+  function installSidebarSorting() {
+    const sidebar = document.querySelector<HTMLElement>('#starlight__sidebar .sidebar-content');
+    const list = sidebar?.querySelector<HTMLUListElement>('ul.top-level');
+    if (!sidebar || !list || sidebar.querySelector('[data-notes-sort]')) return;
+    const sidebarList = list;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'notes-sort';
+    wrapper.dataset.notesSort = '';
+
+    const label = document.createElement('label');
+    label.htmlFor = 'notes-sidebar-sort';
+    label.textContent = 'Sort notes';
+
+    const select = document.createElement('select');
+    select.id = 'notes-sidebar-sort';
+    select.autocomplete = 'off';
+    const choices = [
+      ['recent-desc', 'Recent first'],
+      ['recent-asc', 'Oldest first'],
+      ['title-asc', 'Title A–Z'],
+      ['title-desc', 'Title Z–A'],
+    ] as const;
+    for (const [value, text] of choices) {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = text;
+      select.append(option);
+    }
+
+    wrapper.append(label, select);
+    sidebarList.parentElement?.insertBefore(wrapper, sidebarList);
+
+    type SortMode = typeof choices[number][0];
+    const validModes = new Set<SortMode>(choices.map(([value]) => value));
+    const persistedMode = localStorage.getItem('notes:sidebarSort') as SortMode | null;
+    const collator = new Intl.Collator('en', { numeric: true, sensitivity: 'base' });
+
+    function detailsFor(item: HTMLLIElement) {
+      const details = item.firstElementChild;
+      return details instanceof HTMLDetailsElement ? details : undefined;
+    }
+
+    function noteTitle(item: HTMLLIElement) {
+      return item.querySelector<HTMLAnchorElement>('a[data-note-title]')?.dataset.noteTitle ?? '';
+    }
+
+    function noteUpdated(item: HTMLLIElement) {
+      return Number(item.querySelector<HTMLAnchorElement>('a[data-note-updated]')?.dataset.noteUpdated) || 0;
+    }
+
+    function groupTitle(item: HTMLLIElement) {
+      return detailsFor(item)?.querySelector<HTMLElement>('.group-label')?.textContent?.trim() ?? '';
+    }
+
+    function groupUpdated(item: HTMLLIElement) {
+      const updates = [...item.querySelectorAll<HTMLAnchorElement>('a[data-note-updated]')]
+        .map((link) => Number(link.dataset.noteUpdated) || 0);
+      return Math.max(0, ...updates);
+    }
+
+    function sortSidebar(mode: SortMode) {
+      const direction = mode.endsWith('desc') ? -1 : 1;
+      const byTitle = mode.startsWith('title');
+      const topItems = [...sidebarList.children].filter((item): item is HTMLLIElement => item instanceof HTMLLIElement);
+      const fixedItems = topItems.filter((item) => !detailsFor(item));
+      const groupItems = topItems.filter((item) => detailsFor(item));
+
+      for (const groupItem of groupItems) {
+        const groupList = detailsFor(groupItem)?.querySelector<HTMLUListElement>('ul');
+        if (!groupList) continue;
+        const noteItems = [...groupList.children].filter((item): item is HTMLLIElement => item instanceof HTMLLIElement);
+        noteItems.sort((a, b) => {
+          const primary = byTitle
+            ? collator.compare(noteTitle(a), noteTitle(b))
+            : noteUpdated(a) - noteUpdated(b);
+          return (primary * direction) || collator.compare(noteTitle(a), noteTitle(b));
+        });
+        groupList.append(...noteItems);
+      }
+
+      groupItems.sort((a, b) => {
+        const primary = byTitle
+          ? collator.compare(groupTitle(a), groupTitle(b))
+          : groupUpdated(a) - groupUpdated(b);
+        return (primary * direction) || collator.compare(groupTitle(a), groupTitle(b));
+      });
+      sidebarList.append(...fixedItems, ...groupItems);
+    }
+
+    const initialMode = persistedMode && validModes.has(persistedMode) ? persistedMode : 'recent-desc';
+    select.value = initialMode;
+    sortSidebar(initialMode);
+    select.addEventListener('change', () => {
+      const mode = select.value as SortMode;
+      if (!validModes.has(mode)) return;
+      sortSidebar(mode);
+      localStorage.setItem('notes:sidebarSort', mode);
+    });
+  }
+
+  function installSidebarResizers() {
+    const sides = [
+      { side: 'left', container: document.querySelector<HTMLElement>('.sidebar-pane') },
+      { side: 'right', container: document.querySelector<HTMLElement>('.right-sidebar-container') },
+    ] as const;
+
+    for (const { side, container } of sides) {
+      if (!container || document.querySelector(`[data-notes-resizer="${side}"]`)) continue;
+      const settings = sidebarWidths[side];
+      const handle = document.createElement('div');
+      handle.className = 'notes-sidebar-resizer';
+      handle.dataset.notesResizer = side;
+      handle.setAttribute('role', 'separator');
+      handle.setAttribute('aria-orientation', 'vertical');
+      handle.setAttribute('aria-label', `Resize ${side} sidebar`);
+      handle.setAttribute('aria-valuemin', String(settings.min));
+      handle.setAttribute('aria-valuemax', String(settings.max));
+      handle.tabIndex = 0;
+      document.body.append(handle);
+
+      const viewportMaximum = () => Math.min(settings.max, window.innerWidth * (side === 'left' ? 0.45 : 0.4));
+      const currentWidth = () => container.getBoundingClientRect().width;
+      const setWidth = (value: number, persist = false) => {
+        const width = Math.round(Math.min(viewportMaximum(), Math.max(settings.min, value)));
+        document.documentElement.style.setProperty(settings.cssProperty, `${width}px`);
+        handle.setAttribute('aria-valuenow', String(width));
+        if (persist) localStorage.setItem(settings.storageKey, String(width));
+      };
+      const widthFromPointer = (event: PointerEvent) => (
+        side === 'left' ? event.clientX : window.innerWidth - event.clientX
+      );
+      const stopResizing = (event: PointerEvent) => {
+        if (!handle.hasPointerCapture(event.pointerId)) return;
+        handle.releasePointerCapture(event.pointerId);
+        document.body.classList.remove('notes-sidebar-resizing');
+        setWidth(currentWidth(), true);
+      };
+
+      handle.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        event.preventDefault();
+        handle.setPointerCapture(event.pointerId);
+        document.body.classList.add('notes-sidebar-resizing');
+        setWidth(widthFromPointer(event));
+      });
+      handle.addEventListener('pointermove', (event) => {
+        if (!handle.hasPointerCapture(event.pointerId)) return;
+        setWidth(widthFromPointer(event));
+      });
+      handle.addEventListener('pointerup', stopResizing);
+      handle.addEventListener('pointercancel', stopResizing);
+      handle.addEventListener('keydown', (event) => {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        event.preventDefault();
+        const direction = event.key === 'ArrowRight' ? 1 : -1;
+        const sideDirection = side === 'left' ? direction : -direction;
+        setWidth(currentWidth() + (sideDirection * 16), true);
+      });
+      const configuredWidth = Number.parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue(settings.cssProperty),
+      );
+      handle.setAttribute('aria-valuenow', String(Math.round(configuredWidth)));
+    }
+  }
+
+  function readableMermaidColor(fill: string) {
+    const channels = fill.match(/[\d.]+/g)?.slice(0, 3).map(Number);
+    if (!channels || channels.length !== 3) return;
+    const linear = channels.map((channel) => {
+      const value = channel / 255;
+      return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+    });
+    const luminance = (0.2126 * linear[0]!) + (0.7152 * linear[1]!) + (0.0722 * linear[2]!);
+    const blackContrast = (luminance + 0.05) / 0.05;
+    const whiteContrast = 1.05 / (luminance + 0.05);
+    return blackContrast >= whiteContrast ? '#111827' : '#f8fafc';
+  }
+
+  function normalizeMermaidContrast(diagram: HTMLElement) {
+    for (const node of diagram.querySelectorAll<SVGGElement>('.node')) {
+      const shape = node.querySelector<SVGElement>('rect, polygon, circle, ellipse, path');
+      if (!shape) continue;
+      const foreground = readableMermaidColor(getComputedStyle(shape).fill);
+      if (!foreground) continue;
+      node.style.setProperty('color', foreground, 'important');
+      for (const label of node.querySelectorAll<HTMLElement | SVGElement>('.nodeLabel, .label, foreignObject *, text, tspan')) {
+        label.style.setProperty('color', foreground, 'important');
+        label.style.setProperty('fill', foreground, 'important');
+      }
+    }
+  }
+
+  function wrapMermaidDiagram(diagram: HTMLElement) {
+    normalizeMermaidContrast(diagram);
+    if (diagram.closest('.mermaid-viewport')) return;
+
+    const viewport = document.createElement('div');
+    viewport.className = 'mermaid-viewport';
+    const pane = document.createElement('div');
+    pane.className = 'mermaid-pane';
+    const toolbar = document.createElement('div');
+    toolbar.className = 'mermaid-tools';
+    toolbar.setAttribute('aria-label', 'Diagram controls');
+
+    const controls = [
+      ['out', '−', 'Zoom out'],
+      ['in', '+', 'Zoom in'],
+      ['reset', '1:1', 'Reset pan and zoom'],
+      ['fullscreen', '⛶', 'Toggle full screen'],
+    ];
+    for (const [action, text, label] of controls) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.mermaidAction = action;
+      button.textContent = text;
+      button.title = label;
+      button.setAttribute('aria-label', label);
+      toolbar.append(button);
+    }
+
+    diagram.replaceWith(viewport);
+    pane.append(diagram);
+    viewport.append(pane, toolbar);
+
+    let scale = 1;
+    let offsetX = 0;
+    let offsetY = 0;
+    let fitScale = 1;
+    let fitX = 0;
+    let dragOrigin: { x: number; y: number } | undefined;
+
+    const draw = () => {
+      pane.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+      viewport.classList.toggle('is-zoomed', scale !== fitScale || offsetX !== fitX || offsetY !== 0);
+    };
+    // Shrink a tall diagram so the whole picture fits in 80% of the window height.
+    const fit = () => {
+      const svg = diagram.querySelector('svg');
+      if (!svg) return;
+      const isFullscreen = document.fullscreenElement === viewport;
+      // Measure at the natural size, with the transform transition off so the old transform does not leak in.
+      pane.style.transition = 'none';
+      pane.style.transform = '';
+      viewport.style.height = '';
+      const rect = svg.getBoundingClientRect();
+      // The SVG may already sit centered inside the pane; translate relative to that position.
+      const svgLeft = rect.left - pane.getBoundingClientRect().left;
+      const maxHeight = isFullscreen ? viewport.clientHeight : window.innerHeight * 0.8;
+      fitScale = Math.min(1, maxHeight / rect.height, viewport.clientWidth / rect.width);
+      if (!isFullscreen && fitScale < 1) viewport.style.height = `${Math.ceil(rect.height * fitScale)}px`;
+      fitX = (viewport.clientWidth - rect.width * fitScale) / 2 - svgLeft * fitScale;
+      scale = fitScale;
+      offsetX = fitX;
+      offsetY = 0;
+      draw();
+      pane.style.transition = '';
+    };
+    const reset = () => fit();
+    const zoomAt = (nextScale: number, x: number, y: number) => {
+      const bounded = Math.min(8, Math.max(0.4, nextScale));
+      offsetX = x - ((x - offsetX) * bounded / scale);
+      offsetY = y - ((y - offsetY) * bounded / scale);
+      scale = bounded;
+      draw();
+    };
+    const localPoint = (event: MouseEvent | WheelEvent) => {
+      const bounds = viewport.getBoundingClientRect();
+      return [
+        event.clientX - bounds.left - pane.offsetLeft,
+        event.clientY - bounds.top - pane.offsetTop,
+      ] as const;
+    };
+
+    viewport.addEventListener('wheel', (event) => {
+      const isFullscreen = document.fullscreenElement === viewport;
+      if (!isFullscreen && !event.ctrlKey && !event.metaKey) return;
+      event.preventDefault();
+      zoomAt(scale * Math.exp(-event.deltaY / 300), ...localPoint(event));
+    }, { passive: false });
+    viewport.addEventListener('dblclick', (event) => {
+      if ((event.target as Element).closest('.mermaid-tools')) return;
+      zoomAt(scale >= 2 ? 1 : scale * 2, ...localPoint(event));
+    });
+    viewport.addEventListener('pointerdown', (event) => {
+      if ((event.target as Element).closest('.mermaid-tools') || !viewport.classList.contains('is-zoomed')) return;
+      event.preventDefault();
+      window.getSelection()?.removeAllRanges();
+      const rendered = new DOMMatrixReadOnly(getComputedStyle(pane).transform);
+      scale = rendered.a;
+      offsetX = rendered.e;
+      offsetY = rendered.f;
+      pane.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+      dragOrigin = { x: event.clientX - offsetX, y: event.clientY - offsetY };
+      viewport.setPointerCapture(event.pointerId);
+      viewport.classList.add('is-dragging');
+    });
+    viewport.addEventListener('pointermove', (event) => {
+      if (!dragOrigin) return;
+      offsetX = event.clientX - dragOrigin.x;
+      offsetY = event.clientY - dragOrigin.y;
+      draw();
+    });
+    const stopDragging = () => {
+      dragOrigin = undefined;
+      viewport.classList.remove('is-dragging');
+    };
+    viewport.addEventListener('pointerup', stopDragging);
+    viewport.addEventListener('pointercancel', stopDragging);
+    toolbar.addEventListener('click', (event) => {
+      const button = (event.target as Element).closest<HTMLButtonElement>('[data-mermaid-action]');
+      if (!button) return;
+      const centerX = pane.clientWidth / 2;
+      const centerY = pane.clientHeight / 2;
+      if (button.dataset.mermaidAction === 'in') zoomAt(scale * 1.4, centerX, centerY);
+      if (button.dataset.mermaidAction === 'out') zoomAt(scale / 1.4, centerX, centerY);
+      if (button.dataset.mermaidAction === 'reset') reset();
+      if (button.dataset.mermaidAction === 'fullscreen') {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else viewport.requestFullscreen().catch(() => undefined);
+      }
+    });
+    viewport.addEventListener('fullscreenchange', fit);
+    window.addEventListener('resize', () => {
+      if (!viewport.classList.contains('is-zoomed')) fit();
+    });
+    fit();
+  }
+
+  function installMermaidTools() {
+    const prepare = () => {
+      for (const diagram of document.querySelectorAll<HTMLElement>('pre.mermaid[data-processed]')) {
+        if (diagram.querySelector('svg')) wrapMermaidDiagram(diagram);
+      }
+    };
+    prepare();
+    const observer = new MutationObserver(prepare);
+    observer.observe(document.body, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['data-processed'],
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    installSidebarSorting();
+    installMermaidTools();
+    enhanceToggle('.toggle-left-side-bar-btn', 'Toggle notes sidebar');
+    enhanceToggle('.toggle-right-side-bar-btn', 'Toggle table of contents');
+    requestAnimationFrame(installSidebarResizers);
+  });
+</script>

@@ -1,0 +1,71 @@
+.notes-code {
+  position: relative;
+}
+
+.notes-code pre {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: var(--sl-text-code);
+}
+
+/* Shiki runs with defaultColor: false, so each span only carries the theme variables. */
+.notes-code pre,
+.notes-code pre span {
+  background-color: var(--shiki-light-bg);
+  color: var(--shiki-light);
+}
+
+:root[data-theme='dark'] .notes-code pre,
+:root[data-theme='dark'] .notes-code pre span {
+  background-color: var(--shiki-dark-bg);
+  color: var(--shiki-dark);
+}
+
+.notes-code-copy {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.375rem;
+  background: var(--sl-color-bg);
+  color: var(--sl-color-gray-2);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.notes-code:hover .notes-code-copy,
+.notes-code-copy:focus-visible,
+.notes-code-copy[data-copied] {
+  opacity: 1;
+}
+
+.notes-code-copy svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.notes-code-copy[data-copied]::after {
+  content: 'Copied!';
+  position: absolute;
+  right: calc(100% + 0.4rem);
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  background: var(--sl-color-gray-6);
+  color: var(--sl-color-white);
+  font-size: var(--sl-text-xs);
+  white-space: nowrap;
+}
