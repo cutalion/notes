@@ -23,11 +23,26 @@ function note(frontmatter, body = 'Body text.') {
   return `---\n${frontmatter}\n---\n\n${body}\n`;
 }
 
-test('frontmatter is strict and title is required', () => {
-  assert.throws(() => parseFrontmatter('No frontmatter'), /must start with YAML frontmatter/);
-  assert.throws(() => parseFrontmatter(note('description: Missing title')), /title must be a non-empty string/);
+test('frontmatter is checked when it is there', () => {
+  assert.throws(() => parseFrontmatter(note('title: ""')), /title must be a non-empty string/);
   assert.throws(() => parseFrontmatter(note('title: Valid\norder: last')), /order must be a number/);
   assert.equal(parseFrontmatter(note('title: Valid')).data.title, 'Valid');
+});
+
+test('a note without a title takes it from its first heading, then from the file name', () => {
+  const headed = parseFrontmatter('\n# How to write `services` #\n\nBody text.\n', 'guides/services.md');
+  assert.equal(headed.data.title, 'How to write services');
+  assert.equal(headed.body, '\nBody text.\n');
+
+  const described = parseFrontmatter(note('description: Short', '# Refunds\n\nBody text.'), 'refunds.md');
+  assert.deepEqual(described.data, { description: 'Short', title: 'Refunds' });
+
+  const plain = parseFrontmatter('Body text.\n\n# Later heading\n', 'guides/dev-flags.md');
+  assert.equal(plain.data.title, 'dev-flags');
+  assert.equal(plain.body, 'Body text.\n\n# Later heading\n');
+
+  assert.equal(parseFrontmatter('Body text.\n', 'guides/index.md').data.title, 'guides');
+  assert.equal(parseFrontmatter(note('title: Given', '# Heading')).body, '\n# Heading\n');
 });
 
 test('private files and private directories are excluded', (t) => {

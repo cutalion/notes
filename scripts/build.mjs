@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { listNoteFiles } from './content.mjs';
-import { defaultPagesRoot, notePageFile, writeNotePage } from './pages.mjs';
-import { notesRoot } from './paths.mjs';
+import { defaultPagesRoot, notePageFile, writeHomePage, writeNotePage } from './pages.mjs';
+import { notesRoot, options } from './paths.mjs';
 import { createNoteRenderer } from './render-note.mjs';
 import { buildSearchIndex, currentSearchDir } from './search-index.mjs';
 import { ensureShell } from './shell.mjs';
@@ -47,6 +47,9 @@ for (const file of listNoteFiles()) {
 }
 if (broken.length > 0) fail('Notes that do not render:', broken);
 
+const homePage = writeHomePage({ template, pagesRoot });
+if (homePage) pages.add(homePage);
+
 removeStalePages(pagesRoot, pages);
 writeSiteIndex(index);
 writeSidebar(template);
@@ -59,6 +62,8 @@ const { pages: pageCount, checked, failures } = validateLinks({
   pagesRoot,
   searchDir: currentSearchDir(),
 });
-if (failures.length > 0) fail('Broken local links:', failures);
+if (failures.length > 0 && options.strict) fail('Broken local links:', failures);
+if (failures.length > 0) console.warn(`[notes] Broken local links, which fail the build with --strict:\n${failures.join('\n')}`);
 
-console.log(`[notes] Built ${pageCount} pages and validated ${checked} local links in ${((Date.now() - started) / 1000).toFixed(1)}s.`);
+const seconds = ((Date.now() - started) / 1000).toFixed(1);
+console.log(`[notes] Built ${pageCount} pages and checked ${checked} local links in ${seconds}s: ${failures.length} broken.`);

@@ -11,13 +11,14 @@ and writes everything it builds to a hidden folder there.
 
 Commands:
   dev      Serve the notes and update the site when a note changes
-  build    Render every note and check the local links
+  build    Render every note and report the broken local links
   serve    Build, then serve the result without watching
 
 Options:
   --port <number>   Port of the site (default: 4321, or the next free one)
   --title <text>    Site title (default: "<repo folder> Notes")
   --out <dir>       Folder for everything the tool builds (default: .notes)
+  --strict          Fail the build on a broken local link, not only warn
 
 The same options can live in notes.config.mjs in the repository root. The command line wins.
 `;
@@ -38,6 +39,7 @@ try {
       port: { type: 'string' },
       title: { type: 'string' },
       out: { type: 'string' },
+      strict: { type: 'boolean' },
       help: { type: 'boolean', short: 'h' },
     },
   });
@@ -54,7 +56,13 @@ if (!steps[command]) fail(command ? `Unknown command: ${command}` : 'A command i
 if (extra.length > 0) fail(`Unexpected argument: ${extra[0]}`);
 
 // The options travel in the environment, so the Astro build that a script starts sees them too.
-const commandLine = { NOTES_DIR: dir, NOTES_PORT: parsed.values.port, NOTES_TITLE: parsed.values.title, NOTES_OUT: parsed.values.out };
+const commandLine = {
+  NOTES_DIR: dir,
+  NOTES_PORT: parsed.values.port,
+  NOTES_TITLE: parsed.values.title,
+  NOTES_OUT: parsed.values.out,
+  NOTES_STRICT: parsed.values.strict ? '1' : undefined,
+};
 const given = Object.fromEntries(Object.entries(commandLine).filter(([, value]) => value !== undefined));
 const env = { ...process.env, ...given, ASTRO_TELEMETRY_DISABLED: '1' };
 

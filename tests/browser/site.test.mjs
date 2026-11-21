@@ -63,7 +63,7 @@ async function waitForPreview() {
 
 before(async () => {
   const env = { ...process.env, NOTES_PORT: String(testPort) };
-  await runFile(process.execPath, [path.join(packageRoot, 'bin', 'notes.mjs'), 'build'], { cwd: fixtureRoot, env });
+  await runFile(process.execPath, [path.join(packageRoot, 'bin', 'notes.mjs'), 'build', '--strict'], { cwd: fixtureRoot, env });
   preview = spawn(process.execPath, [path.join(packageRoot, 'scripts', 'preview.mjs')], { cwd: fixtureRoot, env, stdio: 'pipe' });
   await waitForPreview();
   browser = await chromium.launch({ headless: true, executablePath: browserExecutable() });

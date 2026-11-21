@@ -19,7 +19,7 @@ Run the commands from the root of the repository that holds the notes:
 
 ```sh
 notes dev            # serve the notes and update the site when a note changes
-notes build          # render every note and check the local links
+notes build          # render every note and report the broken local links
 notes serve          # build, then serve the result without watching
 ```
 
@@ -27,7 +27,7 @@ Each command takes the notes folder as an optional argument, for example `notes 
 
 `notes dev` prints the address of the site, `http://127.0.0.1:4321/` by default. When that port is busy and you did not ask for a port, it takes the next free one, so two repositories can serve their notes side by side.
 
-`notes dev` reports a note with broken frontmatter and keeps serving the rest. It does not check links. `notes build` does: it fails on a link to a missing note, heading, attachment, or source line.
+`notes dev` reports a note with broken frontmatter and keeps serving the rest. It does not check links. `notes build` does: it lists each link to a missing note, heading, attachment, or source line as a warning. With `--strict`, such a link fails the build.
 
 ## Options
 
@@ -38,6 +38,7 @@ Each command takes the notes folder as an optional argument, for example `notes 
 | Site title | `<repo folder> Notes` | `--title` | `title` |
 | Site description | `Notes of <repo folder>` | | `description` |
 | Port | 4321, or the next free one | `--port` | `port` |
+| Fail on broken links | no | `--strict` | `strict` |
 | Extra Markdown plugins | none | | `remarkPlugins` |
 
 The config file is optional. It is `notes.config.mjs` in the repository root, and the command line overrides it:
@@ -54,7 +55,7 @@ export default {
 
 ## Write a note
 
-A note is a `.md` file anywhere below the notes folder. It starts with YAML frontmatter:
+A note is a `.md` file anywhere below the notes folder. It can start with YAML frontmatter:
 
 ```markdown
 ---
@@ -65,7 +66,9 @@ description: How a refund reaches the customer.
 Body starts here.
 ```
 
-`title` is required and `description` is optional. The sidebar groups notes by folder. Set `group` to put a note into another group.
+The frontmatter and each of its fields are optional. Without a `title`, the note takes its title from the `# ` heading that opens it, or else from the file name. The sidebar groups notes by folder. Set `group` to put a note into another group.
+
+`index.md` in the notes folder is the home page. Without it, the home page lists the notes by group.
 
 A file or folder whose name starts with `_` or `.` is not part of the site. Use the `_` prefix for scripts and raw data that sit next to the notes.
 

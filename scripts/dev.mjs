@@ -4,7 +4,7 @@ import path from 'node:path';
 import chokidar from 'chokidar';
 
 import { isHiddenName, listNoteFiles, routeFromRelative } from './content.mjs';
-import { defaultPagesRoot, removeNotePage, writeNotePage } from './pages.mjs';
+import { defaultPagesRoot, removeNotePage, writeHomePage, writeNotePage } from './pages.mjs';
 import { notesRoot, options, outRoot } from './paths.mjs';
 import { createNoteRenderer } from './render-note.mjs';
 import { createSourceRenderer } from './render-source.mjs';
@@ -53,6 +53,7 @@ async function publishSiteData() {
   writeSiteIndex(index);
   try {
     writeSidebar(template);
+    writeHomePage({ template, pagesRoot });
   } catch (error) {
     console.error(`[notes] The sidebar keeps its previous state: ${error.message}`);
   }

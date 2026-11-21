@@ -11,6 +11,7 @@ test('a repository without a config file gets useful defaults', () => {
     description: 'Notes of shop-api',
     port: 4321,
     portIsDefault: true,
+    strict: false,
     remarkPlugins: [],
   });
 });
@@ -28,4 +29,10 @@ test('the config file overrides the defaults, and the command line overrides the
   assert.equal(options.port, 5001);
   assert.equal(options.portIsDefault, false);
   assert.deepEqual(options.remarkPlugins, [plugin]);
+});
+
+test('broken links fail the build only when the config file or the command line asks', () => {
+  const repoRoot = '/work/shop-api';
+  assert.equal(resolveOptions({ repoRoot, config: { strict: true } }).strict, true);
+  assert.equal(resolveOptions({ repoRoot, env: { NOTES_STRICT: '1' } }).strict, true);
 });

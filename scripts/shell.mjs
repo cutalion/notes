@@ -21,7 +21,7 @@ const tocMarkerItems = /<ul class="([^"]+)" style="--depth: 0;"><li style="--dep
 const contentMarker = /<div class="sl-heading-wrapper level-h2"><h2 id="notestocmarker">[\s\S]*?<p>notescontentmarker<\/p>/;
 const runFile = promisify(execFile);
 
-function escapeHtml(value) {
+export function escapeHtml(value) {
   return value
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
@@ -131,8 +131,23 @@ function tocHtml(items, listClass, className, depth = 0) {
   }).join('');
 }
 
-export function fillShell(template, { title, description, relativePath, html, headings }) {
+// A generated page has no Markdown file behind it, so it loses the block with the copy buttons.
+function withoutCopyActions(page) {
+  const start = page.indexOf('<div class="notes-copy-actions ');
+  if (start === -1) throw new Error('The shell page has no copy actions');
+  const tag = /<div\b|<\/div>/g;
+  tag.lastIndex = start;
+  let depth = 0;
+  for (let match = tag.exec(page); match; match = tag.exec(page)) {
+    depth += match[0] === '</div>' ? -1 : 1;
+    if (depth === 0) return page.slice(0, start) + page.slice(tag.lastIndex);
+  }
+  throw new Error('The copy actions of the shell page do not close');
+}
+
+export function fillShell(template, { title, description, relativePath, html, headings, generated = false }) {
   if (!contentMarker.test(template)) throw new Error('The shell page has no content marker');
+  if (generated) template = withoutCopyActions(template);
   const rawUrl = `/${relativePath.split('/').map(encodeURIComponent).join('/')}`;
   const toc = tocTree(headings);
 

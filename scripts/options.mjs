@@ -10,6 +10,7 @@ export function resolveOptions({ repoRoot, config = {}, env = {} }) {
     title: `${repoName} Notes`,
     description: `Notes of ${repoName}`,
     port: 4321,
+    strict: false,
     remarkPlugins: [],
   };
   const fromCommandLine = {
@@ -17,6 +18,7 @@ export function resolveOptions({ repoRoot, config = {}, env = {} }) {
     out: env.NOTES_OUT,
     title: env.NOTES_TITLE,
     port: env.NOTES_PORT,
+    strict: env.NOTES_STRICT === undefined ? undefined : env.NOTES_STRICT === '1',
   };
   const given = (values) => Object.fromEntries(Object.entries(values).filter(([, value]) => value !== undefined));
   const options = { ...defaults, ...given(config), ...given(fromCommandLine) };

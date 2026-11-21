@@ -27,20 +27,34 @@ export function listNoteFiles(root = notesRoot) {
   return files.sort();
 }
 
+const LEADING_HEADING = /^(?:[ \t]*\r?\n)*#[ \t]+(.+?)[ \t]*#*[ \t]*(?:\r?\n|$)/;
+
+// Frontmatter is optional. Without a title there, the title is the heading that opens the note,
+// which then leaves the body so the page does not show it twice, or else the file name.
 export function parseFrontmatter(source, file = '<note>') {
   const match = source.match(FRONTMATTER);
-  if (!match) throw new Error(`${file}: public notes must start with YAML frontmatter`);
+  const data = match ? parseYaml(match[1], file) : {};
+  const body = match ? source.slice(match[0].length) : source;
+  if (data.title !== undefined) return { data, body };
 
-  const document = parseDocument(match[1], { prettyErrors: true, uniqueKeys: true });
+  const heading = body.match(LEADING_HEADING);
+  const headingTitle = heading ? plainText(heading[1]) : '';
+  if (headingTitle) return { data: { ...data, title: headingTitle }, body: body.slice(heading[0].length) };
+
+  return { data: { ...data, title: titleFromFile(file) }, body };
+}
+
+function parseYaml(text, file) {
+  const document = parseDocument(text, { prettyErrors: true, uniqueKeys: true });
   if (document.errors.length > 0) {
     throw new Error(`${file}: invalid YAML frontmatter: ${document.errors[0].message}`);
   }
 
-  const data = document.toJS();
-  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+  const data = document.toJS() ?? {};
+  if (typeof data !== 'object' || Array.isArray(data)) {
     throw new Error(`${file}: frontmatter must be a mapping`);
   }
-  if (typeof data.title !== 'string' || data.title.trim() === '') {
+  if (data.title !== undefined && (typeof data.title !== 'string' || data.title.trim() === '')) {
     throw new Error(`${file}: frontmatter title must be a non-empty string`);
   }
   if (data.description !== undefined && typeof data.description !== 'string') {
@@ -53,7 +67,20 @@ export function parseFrontmatter(source, file = '<note>') {
     throw new Error(`${file}: frontmatter order must be a number`);
   }
 
-  return { data, body: source.slice(match[0].length) };
+  return data;
+}
+
+function plainText(markdown) {
+  return markdown
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/[`*]/g, '')
+    .trim();
+}
+
+function titleFromFile(file) {
+  const parts = file.replace(/\.md$/i, '').split('/');
+  const name = parts.pop();
+  return name === 'index' && parts.length > 0 ? parts.pop() : name;
 }
 
 export function routeFromRelative(relativePath) {
