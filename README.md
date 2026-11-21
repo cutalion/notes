@@ -7,8 +7,8 @@
 `notes` needs Node 22.12 or newer. Install it from the git repository, either for one project or for your user:
 
 ```sh
-npm install --save-dev github:<owner>/notes   # one project, run it with `npx notes`
-npm install --global github:<owner>/notes     # every project, run it with `notes`
+npm install --save-dev github:cutalion/notes   # one project, run it with `npx notes`
+npm install --global github:cutalion/notes     # every project, run it with `notes`
 ```
 
 The install downloads about 700MB of dependencies, most of it Astro, Mermaid, and Pagefind.
