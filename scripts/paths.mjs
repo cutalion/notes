@@ -15,6 +15,8 @@ export const options = resolveOptions({ repoRoot, config, env: process.env });
 export const notesRoot = options.dir;
 // Everything the tool writes goes here: the Astro project root, the caches, and the built pages.
 export const outRoot = options.out;
+// The pages, the caches, and the search index of this notes folder. The page shell is shared.
+export const siteRoot = options.site;
 
 // npm may install a dependency inside the package or in a folder above it.
 export function dependencyRoot(name) {

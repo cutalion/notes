@@ -4,9 +4,9 @@ import path from 'node:path';
 import { listNoteFiles, normalizeNote } from './content.mjs';
 import { writeFileAtomically } from './files.mjs';
 import { linksInMarkdown, resolveLocalLink } from './links.mjs';
-import { notesRoot, outRoot, repoRoot } from './paths.mjs';
+import { notesRoot, repoRoot, siteRoot } from './paths.mjs';
 
-export const siteIndexFile = path.join(outRoot, 'site-index.json');
+export const siteIndexFile = path.join(siteRoot, 'site-index.json');
 
 const defaultRoots = { notesRoot, repoRoot };
 

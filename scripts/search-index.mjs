@@ -5,9 +5,9 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { writeFileAtomically } from './files.mjs';
-import { outRoot, packageRoot } from './paths.mjs';
+import { packageRoot, siteRoot } from './paths.mjs';
 
-const defaultSearchRoot = path.join(outRoot, 'pagefind');
+const defaultSearchRoot = path.join(siteRoot, 'pagefind');
 const runFile = promisify(execFile);
 
 // The CLI indexes pages from disk about twice as fast as the Node API; the package exports no lookup for it.

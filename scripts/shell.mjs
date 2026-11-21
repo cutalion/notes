@@ -4,7 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { dependencyRoot, notesRoot, options, outRoot, packageRoot, repoRoot } from './paths.mjs';
+import { writeFileAtomically } from './files.mjs';
+import { dependencyRoot, notesRoot, options, outRoot, packageRoot, repoRoot, siteRoot } from './paths.mjs';
 
 export const shellSidebar = [
   { label: 'notessidebarmarker', link: '/notessidebarmarker/' },
@@ -89,13 +90,22 @@ async function buildShell(outDir) {
   }
 }
 
+// Another notes folder of the repository can run with another title, and so with another shell.
+function shellsInUse() {
+  const sitesRoot = path.dirname(siteRoot);
+  const pointers = fs.readdirSync(sitesRoot).map((site) => path.join(sitesRoot, site, 'shell'));
+  return new Set(pointers.filter((pointer) => fs.existsSync(pointer)).map((pointer) => fs.readFileSync(pointer, 'utf8')));
+}
+
 export async function ensureShell() {
   prepareAstroRoot();
   const hash = shellHash();
   const root = path.join(shellRoot, hash);
   if (!fs.existsSync(root)) await buildShell(root);
+  writeFileAtomically(path.join(siteRoot, 'shell'), hash);
+  const used = shellsInUse();
   for (const name of fs.readdirSync(shellRoot)) {
-    const stale = name !== hash && !['astro', 'vite'].includes(name) && !name.endsWith('.tmp');
+    const stale = !used.has(name) && !['astro', 'vite'].includes(name) && !name.endsWith('.tmp');
     if (stale) fs.rmSync(path.join(shellRoot, name), { recursive: true, force: true });
   }
   return {

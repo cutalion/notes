@@ -3,9 +3,9 @@ import path from 'node:path';
 
 import { buildSidebar } from './content.mjs';
 import { writeFileAtomically } from './files.mjs';
-import { notesRoot, outRoot } from './paths.mjs';
+import { notesRoot, siteRoot } from './paths.mjs';
 
-export const sidebarFile = path.join(outRoot, 'sidebar.json');
+export const sidebarFile = path.join(siteRoot, 'sidebar.json');
 
 // The shell sidebar holds one top-level link and one group with one link, see `shellSidebar`.
 const sidebarMarker = /<ul class="top-level [^"]+">[\s\S]*?notesitemmarker[\s\S]*?<\/ul><\/details><\/li><\/ul>/;

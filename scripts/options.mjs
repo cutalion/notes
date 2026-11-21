@@ -23,10 +23,16 @@ export function resolveOptions({ repoRoot, config = {}, env = {} }) {
   const given = (values) => Object.fromEntries(Object.entries(values).filter(([, value]) => value !== undefined));
   const options = { ...defaults, ...given(config), ...given(fromCommandLine) };
 
+  const dir = path.resolve(repoRoot, options.dir);
+  const out = path.resolve(repoRoot, options.out);
+  // Each notes folder keeps its pages and caches apart, so two folders of one repository can be served at once.
+  const siteName = (path.relative(repoRoot, dir) || 'root').replaceAll('..', 'up').replace(/[^\w.-]+/g, '-');
+
   return {
     ...options,
-    dir: path.resolve(repoRoot, options.dir),
-    out: path.resolve(repoRoot, options.out),
+    dir,
+    out,
+    site: path.join(out, 'sites', siteName),
     port: Number(options.port),
     // A server may move to the next free port only when nobody asked for this one.
     portIsDefault: config.port === undefined && env.NOTES_PORT === undefined,

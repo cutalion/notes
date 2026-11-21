@@ -7,6 +7,7 @@ test('a repository without a config file gets useful defaults', () => {
   assert.deepEqual(resolveOptions({ repoRoot: '/work/shop-api' }), {
     dir: '/work/shop-api/docs',
     out: '/work/shop-api/.notes',
+    site: '/work/shop-api/.notes/sites/docs',
     title: 'shop-api Notes',
     description: 'Notes of shop-api',
     port: 4321,
@@ -35,4 +36,12 @@ test('broken links fail the build only when the config file or the command line 
   const repoRoot = '/work/shop-api';
   assert.equal(resolveOptions({ repoRoot, config: { strict: true } }).strict, true);
   assert.equal(resolveOptions({ repoRoot, env: { NOTES_STRICT: '1' } }).strict, true);
+});
+
+test('each notes folder gets its own folder for pages and caches', () => {
+  const site = (dir) => resolveOptions({ repoRoot: '/work/shop-api', env: { NOTES_DIR: dir } }).site;
+
+  assert.equal(site('team/docs'), '/work/shop-api/.notes/sites/team-docs');
+  assert.equal(site('.'), '/work/shop-api/.notes/sites/root');
+  assert.equal(site('../handbook'), '/work/shop-api/.notes/sites/up-handbook');
 });

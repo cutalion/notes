@@ -13,7 +13,7 @@ import { hashFiles, writeFileAtomically } from './files.mjs';
 import { createCodeHighlighter } from './highlight.mjs';
 import { remarkIconLists } from './icon-lists.mjs';
 import { remarkLocalLinks } from './links.mjs';
-import { configFile, dependencyRoot, notesRoot, options, outRoot, packageRoot } from './paths.mjs';
+import { configFile, dependencyRoot, notesRoot, options, outRoot, packageRoot, siteRoot } from './paths.mjs';
 
 const rendererFiles = [
   'scripts/content.mjs',
@@ -89,7 +89,7 @@ function rehypeCodeBlocks({ highlight }) {
   };
 }
 
-export async function createNoteRenderer({ root = notesRoot, cacheRoot = path.join(outRoot, 'notes') } = {}) {
+export async function createNoteRenderer({ root = notesRoot, cacheRoot = path.join(siteRoot, 'notes') } = {}) {
   // A change to the renderer code, to any dependency version, or to the config file, which may
   // add Markdown plugins, invalidates every cached note.
   const config = fs.existsSync(configFile) ? fs.readFileSync(configFile, 'utf8') : '';

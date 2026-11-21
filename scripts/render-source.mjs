@@ -6,7 +6,7 @@ import { hashFiles, writeFileAtomically } from './files.mjs';
 import { createCodeHighlighter } from './highlight.mjs';
 import { fillShell } from './shell.mjs';
 import { languageFor, sourceLineAnchors, sourceViewHtml } from './source-view.mjs';
-import { outRoot } from './paths.mjs';
+import { siteRoot } from './paths.mjs';
 
 const rendererFiles = [
   'scripts/files.mjs',
@@ -17,7 +17,7 @@ const rendererFiles = [
 ];
 
 // `entry` is the source record that `resolveSiteRoute()` in `scripts/site-server.mjs` returns.
-export async function createSourceRenderer({ cacheRoot = path.join(outRoot, 'sources') } = {}) {
+export async function createSourceRenderer({ cacheRoot = path.join(siteRoot, 'sources') } = {}) {
   const hash = hashFiles(rendererFiles);
   const highlight = await createCodeHighlighter();
 

@@ -3,10 +3,10 @@ import path from 'node:path';
 
 import { buildSidebar, normalizeNote } from './content.mjs';
 import { writeFileAtomically } from './files.mjs';
-import { notesRoot, options, outRoot } from './paths.mjs';
+import { notesRoot, options, siteRoot } from './paths.mjs';
 import { escapeHtml, fillShell } from './shell.mjs';
 
-export const defaultPagesRoot = path.join(outRoot, 'pages');
+export const defaultPagesRoot = path.join(siteRoot, 'pages');
 
 // A note page on disk keeps the sidebar marker; the server inserts the sidebar when it sends the page.
 export function notePageFile(pagesRoot, route) {
