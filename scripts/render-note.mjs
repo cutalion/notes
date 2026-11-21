@@ -24,7 +24,7 @@ const rendererFiles = [
   'scripts/options.mjs',
   'scripts/paths.mjs',
   'scripts/render-note.mjs',
-  'npm-shrinkwrap.json',
+  'package.json',
 ];
 const starlightRoot = dependencyRoot('@astrojs/starlight');
 const starlightTranslations = JSON.parse(fs.readFileSync(path.join(starlightRoot, 'translations', 'en.json'), 'utf8'));

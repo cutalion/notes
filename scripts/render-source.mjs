@@ -13,7 +13,7 @@ const rendererFiles = [
   'scripts/highlight.mjs',
   'scripts/render-source.mjs',
   'scripts/source-view.mjs',
-  'npm-shrinkwrap.json',
+  'package.json',
 ];
 
 // `entry` is the source record that `resolveSiteRoute()` in `scripts/site-server.mjs` returns.

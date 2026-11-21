@@ -14,7 +14,7 @@ export const shellSidebar = [
 const shellRoot = path.join(outRoot, 'shell');
 const shellPage = path.join('notespathmarker', 'index.html');
 const sourceShellPage = path.join('source', 'sourcepathmarker', 'index.html');
-const shellInputs = ['astro.config.mjs', 'npm-shrinkwrap.json', 'scripts', 'src'];
+const shellInputs = ['astro.config.mjs', 'package.json', 'scripts', 'src'];
 const notesFolder = path.relative(repoRoot, notesRoot).split(path.sep).join('/');
 // Each table of contents (desktop and mobile) starts with Overview; nested lists repeat the list class.
 const tocMarkerItems = /<ul class="([^"]+)" style="--depth: 0;"><li style="--depth: 0;" class="([^"]+)"><a href="#_top"[\s\S]*?<a href="#notestocmarker"[\s\S]*?<\/li>/g;

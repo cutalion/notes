@@ -7,6 +7,13 @@
   "bin": {
     "notes": "bin/notes.mjs"
   },
+  "files": [
+    "bin",
+    "scripts",
+    "src",
+    "public",
+    "astro.config.mjs"
+  ],
   "engines": {
     "node": ">=22.12.0"
   },
@@ -17,21 +24,21 @@
     "test:fixture": "node tests/integration/fixture-note.mjs"
   },
   "dependencies": {
-    "@astrojs/markdown-remark": "^7.2.0",
-    "@astrojs/starlight": "^0.41.10",
-    "@mermaid-js/layout-elk": "^0.2.3",
-    "astro": "^7.2.9",
+    "@astrojs/markdown-remark": "7.2.4",
+    "@astrojs/starlight": "0.41.10",
+    "@mermaid-js/layout-elk": "0.2.3",
+    "astro": "7.2.9",
     "astro-mermaid": "2.1.0",
-    "esbuild": "^0.28.2",
-    "mdast-util-from-markdown": "^2.0.2",
-    "mermaid": "^11.12.0",
-    "pagefind": "^1.5.2",
-    "remark-breaks": "^4.0.0",
-    "shiki": "^4.4.3",
-    "starlight-fullview-mode": "^0.2.6",
-    "typescript": "^6.0.3",
-    "unist-util-visit": "^5.0.0",
-    "yaml": "^2.8.1"
+    "esbuild": "0.28.2",
+    "mdast-util-from-markdown": "2.0.3",
+    "mermaid": "11.17.2",
+    "pagefind": "1.5.2",
+    "remark-breaks": "4.0.0",
+    "shiki": "4.4.3",
+    "starlight-fullview-mode": "0.2.6",
+    "typescript": "6.0.3",
+    "unist-util-visit": "5.1.0",
+    "yaml": "2.9.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.6",
