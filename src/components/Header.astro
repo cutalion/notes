@@ -1,0 +1,198 @@
+---
+import Search from '@astrojs/starlight/components/Search.astro';
+import SiteTitle from '@astrojs/starlight/components/SiteTitle.astro';
+import ThemeSelect from '@astrojs/starlight/components/ThemeSelect.astro';
+
+const { hasSidebar } = Astro.locals.starlightRoute;
+---
+
+<div class="notes-header">
+  <div class="notes-header-start">
+    {hasSidebar && (
+      <button
+        class="notes-panel-toggle"
+        type="button"
+        data-notes-toggle="tree"
+        aria-controls="starlight__sidebar"
+        aria-label="Pin the notes tree"
+        aria-pressed="true"
+        title="Pin or unpin the notes tree"
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="16" rx="3"></rect>
+          <path d="M9 4v16"></path>
+        </svg>
+      </button>
+    )}
+    <SiteTitle />
+  </div>
+  <div class="notes-header-search print:hidden">
+    <Search />
+  </div>
+  <div class="notes-header-end sl-hidden md:sl-flex print:hidden">
+    <ThemeSelect />
+    <button
+      class="notes-panel-toggle"
+      type="button"
+      data-notes-toggle="toc"
+      aria-label="Show page contents"
+      aria-pressed="true"
+      title="Show or hide page contents"
+    >
+      <svg aria-hidden="true" viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="16" rx="3"></rect>
+        <path d="M15 4v16"></path>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  // The inline script in `Head.astro` has already put the stored state on the root element.
+  const root = document.documentElement;
+  const wide = window.matchMedia('(min-width: 50rem)');
+  const canHover = window.matchMedia('(hover: hover)');
+  const treeButton = document.querySelector<HTMLButtonElement>('[data-notes-toggle="tree"]');
+  const tocButton = document.querySelector<HTMLButtonElement>('[data-notes-toggle="toc"]');
+  const tree = document.getElementById('starlight__sidebar');
+  // The tree waits a moment before it floats in, and twice as long before it leaves. Without
+  // the delays it would jump out on every pass of the pointer over the button.
+  const showDelay = 120;
+  const hideDelay = 280;
+  let peekTimer: number | undefined;
+
+  const treePinned = () => root.dataset.notesTree !== 'unpinned';
+  const tocShown = () => root.dataset.notesToc !== 'hidden';
+
+  function reflect() {
+    treeButton?.setAttribute('aria-pressed', String(treePinned()));
+    tocButton?.setAttribute('aria-pressed', String(tocShown()));
+  }
+
+  function setPeek(shown: boolean) {
+    window.clearTimeout(peekTimer);
+    if (shown) root.dataset.notesPeek = '';
+    else delete root.dataset.notesPeek;
+  }
+
+  function schedulePeek(shown: boolean) {
+    window.clearTimeout(peekTimer);
+    if (treePinned() || !wide.matches || !canHover.matches) return;
+    if (shown === ('notesPeek' in root.dataset)) return;
+    peekTimer = window.setTimeout(() => setPeek(shown), shown ? showDelay : hideDelay);
+  }
+
+  treeButton?.addEventListener('click', () => {
+    setPeek(false);
+    if (treePinned()) root.dataset.notesTree = 'unpinned';
+    else delete root.dataset.notesTree;
+    localStorage.setItem('notes:mainSideBarCollapsed', String(!treePinned()));
+    reflect();
+  });
+
+  tocButton?.addEventListener('click', () => {
+    if (tocShown()) root.dataset.notesToc = 'hidden';
+    else delete root.dataset.notesToc;
+    localStorage.setItem('notes:rightSideBarCollapsed', String(!tocShown()));
+    reflect();
+  });
+
+  for (const element of [treeButton, tree]) {
+    element?.addEventListener('pointerenter', (event) => {
+      if (event.pointerType === 'mouse') schedulePeek(true);
+    });
+    element?.addEventListener('pointerleave', (event) => {
+      if (event.pointerType === 'mouse') schedulePeek(false);
+    });
+  }
+
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && 'notesPeek' in root.dataset) setPeek(false);
+  });
+
+  reflect();
+</script>
+
+<style>
+  .notes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--notes-space-2);
+    height: 100%;
+  }
+
+  .notes-header-start,
+  .notes-header-end {
+    align-items: center;
+    gap: var(--notes-space-1);
+    min-width: 0;
+  }
+
+  .notes-header-start {
+    display: flex;
+  }
+
+  .notes-header-end {
+    justify-content: flex-end;
+  }
+
+
+  .notes-header-search {
+    display: flex;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .notes-panel-toggle {
+    display: none;
+    flex: 0 0 var(--notes-control-height);
+    align-items: center;
+    justify-content: center;
+    width: var(--notes-control-height);
+    height: var(--notes-control-height);
+    padding: 0;
+    border: 0;
+    border-radius: var(--notes-radius-small);
+    background: transparent;
+    color: var(--notes-color-body);
+    cursor: pointer;
+  }
+
+  .notes-panel-toggle:hover {
+    background: var(--notes-color-hover);
+  }
+
+  .notes-panel-toggle[aria-pressed='true'],
+  :global(:root[data-notes-peek]) .notes-panel-toggle[data-notes-toggle='tree'] {
+    background: var(--notes-color-pressed);
+  }
+
+  .notes-panel-toggle svg {
+    width: var(--notes-icon-size);
+    height: var(--notes-icon-size);
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: var(--notes-icon-stroke);
+  }
+
+  @media (min-width: 50rem) {
+    /* The search stays in the middle of the header, whatever the width of the two sides. */
+    .notes-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, var(--notes-search-width)) minmax(0, 1fr);
+    }
+
+    .notes-panel-toggle[data-notes-toggle='tree'] {
+      display: inline-flex;
+    }
+  }
+
+  @media (min-width: 72rem) {
+    :global(:root[data-has-toc]) .notes-panel-toggle[data-notes-toggle='toc'] {
+      display: inline-flex;
+    }
+  }
+</style>

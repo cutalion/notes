@@ -122,10 +122,12 @@ test('theme switching persists and rerenders Mermaid', async () => {
   await page.waitForSelector('pre.mermaid svg');
   await page.waitForFunction(() => document.querySelectorAll('.mermaid-viewport').length === 3);
   assert.equal(await page.locator('.mermaid-viewport').count(), 3);
-  assert.equal(await page.locator('.mermaid-viewport').first().locator('.mermaid-tools button').count(), 4);
+  const block = page.locator('.mermaid-block').first();
+  assert.equal(await block.locator('.mermaid-header .mermaid-tools button').count(), 4);
+  assert.equal(await block.locator('.mermaid-caption').textContent(), 'Diagram');
 
-  const viewport = page.locator('.mermaid-viewport').first();
-  const controlBoxes = await viewport.locator('.mermaid-tools button').evaluateAll((buttons) => (
+  const viewport = block.locator('.mermaid-viewport');
+  const controlBoxes = await block.locator('.mermaid-tools button').evaluateAll((buttons) => (
     buttons.map((button) => {
       const box = button.getBoundingClientRect();
       return { height: box.height, top: box.top };
@@ -133,24 +135,25 @@ test('theme switching persists and rerenders Mermaid', async () => {
   ));
   assert.equal(new Set(controlBoxes.map(({ height }) => height)).size, 1);
   assert.equal(new Set(controlBoxes.map(({ top }) => top)).size, 1);
-  await viewport.locator('[data-mermaid-action="in"]').click();
+  await block.locator('[data-mermaid-action="in"]').click();
   assert.equal(await viewport.evaluate((element) => element.classList.contains('is-zoomed')), true);
   assert.equal(await viewport.evaluate((element) => getComputedStyle(element).userSelect), 'none');
   assert.notEqual(
     await viewport.locator('.mermaid-pane').evaluate((element) => getComputedStyle(element).transitionDuration),
     '0s',
   );
-  await viewport.locator('[data-mermaid-action="reset"]').click();
+  await block.locator('[data-mermaid-action="reset"]').click();
   assert.equal(await viewport.evaluate((element) => element.classList.contains('is-zoomed')), false);
-  await viewport.evaluate((element) => {
+  await block.evaluate((element) => {
     element.requestFullscreen = async () => { element.dataset.fullscreenRequested = 'true'; };
   });
-  await viewport.locator('[data-mermaid-action="fullscreen"]').click();
-  assert.equal(await viewport.getAttribute('data-fullscreen-requested'), 'true');
-  const fullscreenWheelZoomed = await viewport.evaluate((element) => {
+  await block.locator('[data-mermaid-action="fullscreen"]').click();
+  assert.equal(await block.getAttribute('data-fullscreen-requested'), 'true');
+  const fullscreenWheelZoomed = await block.evaluate((element) => {
+    const area = element.querySelector('.mermaid-viewport');
     Object.defineProperty(document, 'fullscreenElement', { configurable: true, get: () => element });
-    element.dispatchEvent(new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: -100 }));
-    return element.classList.contains('is-zoomed');
+    area.dispatchEvent(new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: -100 }));
+    return area.classList.contains('is-zoomed');
   });
   assert.equal(fullscreenWheelZoomed, true);
 
@@ -268,83 +271,148 @@ test('desktop sidebars resize by dragging and persist their widths', async () =>
   await context.close();
 });
 
-test('desktop uses compact typography and reveals sidebar boundaries on hover', async () => {
+test('desktop sizes every text from the note text and keeps the column readable', async () => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
   await page.goto(`${baseUrl}/proofs/investigation/`);
+  await page.locator('[data-notes-resizer="right"]').waitFor();
 
-  const styles = await page.evaluate(() => ({
-    titleSize: getComputedStyle(document.querySelector('h1')).fontSize,
-    bodySize: getComputedStyle(document.querySelector('.sl-markdown-content p')).fontSize,
-    sidebarWeight: getComputedStyle(document.querySelector('#starlight__sidebar .large')).fontWeight,
-    leftBorder: getComputedStyle(document.querySelector('.sidebar-pane')).borderInlineEndColor,
-    rightBorder: getComputedStyle(document.querySelector('.right-sidebar')).borderInlineStartColor,
-    resizer: getComputedStyle(document.querySelector('[data-notes-resizer="left"]'), '::after').backgroundColor,
-  }));
-  assert.equal(styles.titleSize, '36px');
-  assert.equal(styles.bodySize, '15px');
-  assert.equal(styles.sidebarWeight, '500');
-  assert.equal(styles.leftBorder, 'rgba(0, 0, 0, 0)');
-  assert.equal(styles.rightBorder, 'rgba(0, 0, 0, 0)');
+  const styles = await page.evaluate(() => {
+    const size = (selector) => parseFloat(getComputedStyle(document.querySelector(selector)).fontSize);
+    const box = (selector) => document.querySelector(selector).getBoundingClientRect();
+    const column = box('.sl-markdown-content');
+    return {
+      body: size('.sl-markdown-content p'),
+      title: size('h1'),
+      folder: size('#starlight__sidebar .large'),
+      note: size('#starlight__sidebar ul ul a'),
+      contents: size('starlight-toc a'),
+      control: size('.notes-copy-primary'),
+      folderWeight: getComputedStyle(document.querySelector('#starlight__sidebar .large')).fontWeight,
+      column: column.width,
+      columnCenter: column.left + (column.width / 2),
+      tree: box('.sidebar-pane').width,
+      contentsLeft: box('.right-sidebar-container').left,
+      contentsWidth: box('.right-sidebar-container').width,
+      header: box('header').height,
+      controlHeights: [...document.querySelectorAll('header .notes-panel-toggle, header site-search button[data-open-modal], header select')]
+        .map((control) => control.getBoundingClientRect().height),
+      treeBorder: getComputedStyle(document.querySelector('.sidebar-pane')).borderInlineEndColor,
+      resizer: getComputedStyle(document.querySelector('[data-notes-resizer="left"]'), '::after').backgroundColor,
+    };
+  });
+  assert.equal(styles.title, styles.body * 2);
+  assert.equal(styles.folder, styles.body * 0.875);
+  assert.equal(styles.note, styles.folder);
+  assert.equal(styles.contents, styles.folder);
+  assert.equal(styles.control, styles.body * 0.75);
+  assert.equal(styles.folderWeight, '600');
+  // The column is set by the length of the line, and the two panels together stay narrower.
+  assert.equal(styles.column, styles.body * 38);
+  assert.ok(styles.tree + styles.contentsWidth < styles.column);
+  assert.ok(Math.abs(styles.columnCenter - ((styles.tree + styles.contentsLeft) / 2)) <= 1, JSON.stringify(styles));
+  assert.equal(styles.header, styles.body * 3);
+  assert.equal(new Set(styles.controlHeights).size, 1, JSON.stringify(styles.controlHeights));
+  // The border of a panel is a plain line. The drag handle over it stays invisible.
+  assert.notEqual(styles.treeBorder, 'rgba(0, 0, 0, 0)');
   assert.equal(styles.resizer, 'rgba(0, 0, 0, 0)');
 
-  const leftHandle = page.locator('[data-notes-resizer="left"]');
-  await leftHandle.hover({ position: { x: 4, y: 40 } });
-  await page.waitForTimeout(200);
-  assert.notEqual(
-    await leftHandle.evaluate((element) => getComputedStyle(element, '::after').backgroundColor),
-    'rgba(0, 0, 0, 0)',
-  );
+  // A wider window adds margin around the column and leaves the lines as long as they were.
+  await page.setViewportSize({ width: 1900, height: 900 });
+  assert.equal(await page.locator('.sl-markdown-content').evaluate((element) => element.getBoundingClientRect().width), styles.column);
+
+  // A long name takes two lines in the tree, and the tooltip holds the whole name.
+  const current = page.locator('#starlight__sidebar a[aria-current="page"]');
+  assert.equal(await current.getAttribute('title'), 'Proof of payment investigation');
+  assert.equal(await current.locator('span').evaluate((label) => getComputedStyle(label).webkitLineClamp), '2');
   await context.close();
 });
 
-test('desktop rails collapse independently and persist locally', async () => {
+test('the header buttons pin the tree and hide the contents, and the choice persists', async () => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
   await page.goto(`${baseUrl}/models-overview/`);
 
-  await page.locator('.toggle-left-side-bar-btn').click();
-  await page.waitForFunction(() => localStorage.getItem('notes:mainSideBarCollapsed') === 'true');
-  assert.equal(await page.locator('body').evaluate((body) => body.classList.contains('main-side-bar-collapsed')), true);
-  assert.equal(await page.locator('body').evaluate((body) => body.classList.contains('right-side-bar-collapsed')), false);
-  assert.equal(await page.locator('#notes-sidebar-sort').isVisible(), false);
-  assert.equal(await page.locator('.toggle-left-side-bar-btn').isVisible(), true);
-  const leftRail = await page.locator('.sidebar-pane').boundingBox();
-  const leftToggle = await page.locator('.toggle-left-side-bar-btn').boundingBox();
-  const leftCenterDelta = Math.abs(
-    (leftRail.x + (leftRail.width / 2)) - (leftToggle.x + (leftToggle.width / 2)),
-  );
-  assert.ok(leftCenterDelta <= 1, JSON.stringify({ leftRail, leftToggle, leftCenterDelta }));
+  const root = page.locator('html');
+  const tree = page.locator('.sidebar-pane');
+  const treeToggle = page.locator('[data-notes-toggle="tree"]');
+  const tocToggle = page.locator('[data-notes-toggle="toc"]');
+  const mainLeft = () => page.locator('.main-frame').evaluate((frame) => parseFloat(getComputedStyle(frame).paddingInlineStart));
 
-  await page.locator('.toggle-right-side-bar-btn').click();
-  await page.waitForFunction(() => localStorage.getItem('notes:rightSideBarCollapsed') === 'true');
-  assert.equal(await page.locator('body').evaluate((body) => body.classList.contains('main-side-bar-collapsed')), true);
-  assert.equal(await page.locator('body').evaluate((body) => body.classList.contains('right-side-bar-collapsed')), true);
-  const rightRail = await page.locator('.right-sidebar-container').boundingBox();
-  const rightToggle = await page.locator('.toggle-right-side-bar-btn').boundingBox();
-  const rightCenterDelta = Math.abs(
-    (rightRail.x + (rightRail.width / 2)) - (rightToggle.x + (rightToggle.width / 2)),
-  );
-  assert.ok(rightCenterDelta <= 1, JSON.stringify({ rightRail, rightToggle, rightCenterDelta }));
+  // The tree button is the first control of the header, the contents button the last one.
+  const headerControls = await page.locator('header :is(button, a, select)').evaluateAll((controls) => (
+    controls.filter((control) => control.getBoundingClientRect().width > 0).map((control) => control.dataset.notesToggle ?? control.tagName)
+  ));
+  assert.equal(headerControls.at(0), 'tree');
+  assert.equal(headerControls.at(-1), 'toc');
+
+  assert.equal(await treeToggle.getAttribute('aria-pressed'), 'true');
+  assert.equal(await tree.isVisible(), true);
+  assert.ok(await mainLeft() > 0);
+
+  await treeToggle.click();
+  assert.equal(await root.getAttribute('data-notes-tree'), 'unpinned');
+  assert.equal(await treeToggle.getAttribute('aria-pressed'), 'false');
+  assert.equal(await page.evaluate(() => localStorage.getItem('notes:mainSideBarCollapsed')), 'true');
+  assert.equal(await mainLeft(), 0);
+  assert.equal(await page.locator('[data-notes-resizer="left"]').isVisible(), false);
+
+  // The click left the pointer on the button, so move away and let the tree go.
+  await page.mouse.move(700, 500);
+  await page.waitForFunction(() => getComputedStyle(document.querySelector('.sidebar-pane')).visibility === 'hidden');
+
+  // The unpinned tree floats over the note while the pointer is on the button or on the tree.
+  const columnLeft = await page.locator('.sl-markdown-content').evaluate((element) => element.getBoundingClientRect().left);
+  await treeToggle.hover();
+  await page.waitForFunction(() => document.documentElement.hasAttribute('data-notes-peek'));
+  await page.waitForFunction(() => getComputedStyle(document.querySelector('.sidebar-pane')).opacity === '1');
+  assert.equal(await tree.isVisible(), true);
+  assert.equal(await page.locator('.sl-markdown-content').evaluate((element) => element.getBoundingClientRect().left), columnLeft);
+  await page.locator('#notes-sidebar-sort').hover();
+  await page.waitForTimeout(400);
+  assert.equal(await root.getAttribute('data-notes-peek'), '');
+  await page.keyboard.press('Escape');
+  assert.equal(await root.getAttribute('data-notes-peek'), null);
+  await page.mouse.move(700, 500);
+
+  await tocToggle.click();
+  assert.equal(await root.getAttribute('data-notes-toc'), 'hidden');
+  assert.equal(await tocToggle.getAttribute('aria-pressed'), 'false');
+  assert.equal(await page.evaluate(() => localStorage.getItem('notes:rightSideBarCollapsed')), 'true');
+  assert.equal(await page.locator('.right-sidebar-container').isVisible(), false);
+  assert.equal(await tocToggle.isVisible(), true);
 
   await page.reload();
-  assert.equal(await page.locator('body').evaluate((body) => body.classList.contains('main-side-bar-collapsed')), true);
-  assert.equal(await page.locator('body').evaluate((body) => body.classList.contains('right-side-bar-collapsed')), true);
+  assert.equal(await root.getAttribute('data-notes-tree'), 'unpinned');
+  assert.equal(await root.getAttribute('data-notes-toc'), 'hidden');
+  assert.equal(await treeToggle.getAttribute('aria-pressed'), 'false');
+  assert.equal(await page.locator('.right-sidebar-container').isVisible(), false);
 
-  await page.locator('.toggle-left-side-bar-btn').click();
-  assert.equal(await page.locator('body').evaluate((body) => body.classList.contains('main-side-bar-collapsed')), false);
-  assert.equal(await page.locator('body').evaluate((body) => body.classList.contains('right-side-bar-collapsed')), true);
+  // The keyboard reaches the same button: Enter pins the tree back.
+  await treeToggle.focus();
+  await page.keyboard.press('Enter');
+  assert.equal(await root.getAttribute('data-notes-tree'), null);
+  assert.equal(await tree.isVisible(), true);
+  assert.ok(await mainLeft() > 0);
+  assert.equal(await root.getAttribute('data-notes-toc'), 'hidden');
   await context.close();
 });
 
-test('mobile keeps Starlight drawers and hides desktop rail controls', async () => {
+test('mobile keeps Starlight drawers and hides the panel buttons', async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   await page.goto(`${baseUrl}/models-overview/`);
   const mainPane = await page.locator('.main-pane').boundingBox();
   assert.equal(mainPane.x, 0);
   assert.equal(mainPane.width, 390);
-  assert.equal(await page.locator('.toggle-left-side-bar-btn').isVisible(), false);
-  assert.equal(await page.locator('.toggle-right-side-bar-btn').isVisible(), false);
+  assert.equal(await page.locator('[data-notes-toggle="tree"]').isVisible(), false);
+  assert.equal(await page.locator('[data-notes-toggle="toc"]').isVisible(), false);
+  // The theme switch has one place on each screen: on a phone it is in the menu.
+  assert.equal(await page.locator('header starlight-theme-select').isVisible(), false);
+  const margin = await page.locator('.sl-markdown-content').evaluate((element) => {
+    const text = getComputedStyle(element.querySelector('p'));
+    return { left: element.getBoundingClientRect().left, line: parseFloat(text.lineHeight) };
+  });
+  assert.ok(Math.round(margin.left) >= Math.round(margin.line), JSON.stringify(margin));
   assert.equal(await page.locator('#starlight__mobile-toc').isVisible(), true);
 
   await page.locator('starlight-menu-button button').click();

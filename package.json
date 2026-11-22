@@ -35,7 +35,6 @@
     "pagefind": "1.5.2",
     "remark-breaks": "4.0.0",
     "shiki": "4.4.3",
-    "starlight-fullview-mode": "0.2.6",
     "typescript": "6.0.3",
     "unist-util-visit": "5.1.0",
     "yaml": "2.9.0"

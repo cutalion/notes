@@ -1,101 +1,466 @@
+/*
+ * The look follows DESIGN_GUIDE.md. Every size below is a ratio of one value, the size of the
+ * note text, so a change to `--notes-text` rescales the whole page.
+ */
 :root {
-  --sl-color-accent-low: hsl(218, 42%, 20%);
-  --sl-color-accent: hsl(218, 78%, 60%);
-  --sl-color-accent-high: hsl(214, 92%, 86%);
-  --sl-text-base: 0.9375rem;
-  --sl-text-lg: 1rem;
-  --sl-text-xl: 1.125rem;
-  --sl-text-2xl: 1.25rem;
-  --sl-text-3xl: 1.5rem;
-  --sl-text-4xl: 1.875rem;
-  --sl-text-5xl: 2.25rem;
-  --sl-text-h1: 2rem;
-  --sl-text-h2: 1.625rem;
-  --sl-text-h3: 1.25rem;
-  --sl-text-h4: 1.125rem;
-  --sl-text-h5: 1rem;
-  --sl-line-height: 1.7;
+  /* Type: a quarter up per step, an eighth down per step. */
+  --notes-text: 1rem;
+  --notes-text-title: calc(var(--notes-text) * 2);
+  --notes-text-section: calc(var(--notes-text) * 1.5);
+  --notes-text-subsection: calc(var(--notes-text) * 1.25);
+  --notes-text-nav: calc(var(--notes-text) * 0.875);
+  --notes-text-control: calc(var(--notes-text) * 0.75);
+  --notes-line-height: 1.7;
+
+  /* Space: the step is half the note text, and each stop is 1.5 to 2 times the one before. */
+  --notes-space-1: calc(var(--notes-text) * 0.5);
+  --notes-space-2: calc(var(--notes-space-1) * 2);
+  --notes-space-4: calc(var(--notes-space-1) * 4);
+  --notes-space-6: calc(var(--notes-space-1) * 6);
+  --notes-space-12: calc(var(--notes-space-1) * 12);
+  /* Paragraphs stand three quarters of a line apart. */
+  --notes-space-paragraph: calc(var(--notes-text) * var(--notes-line-height) * 0.75);
+
+  /* Page: the column holds 65 to 80 characters, and the two panels together stay narrower. */
+  --notes-column: calc(var(--notes-text) * 38);
+  --notes-tree-width: calc(var(--notes-column) / 3 + var(--notes-space-2));
+  --notes-toc-width: calc(var(--notes-column) / 3);
+  --notes-search-width: calc(var(--notes-column) / 2);
+  --notes-menu-width: calc(var(--notes-column) / 2);
+  --notes-top: var(--notes-space-4);
+
+  /* Controls: a button is 2.5 times as tall as its text. */
+  --notes-control-height: calc(var(--notes-text-control) * 2.5);
+  --notes-row-height: calc(var(--notes-text-nav) * 2 + 2px);
+  --notes-icon-size: calc(var(--notes-text-control) * 1.25);
+  --notes-icon-stroke: 1.75;
+  --notes-radius-small: 0.375rem;
+  --notes-radius-large: 0.625rem;
+
+  /* Color, dark theme: three text tones, three surfaces, one line, one accent. */
+  --notes-color-ink: #f1f3f6;
+  --notes-color-body: #c5cad3;
+  --notes-color-muted: #9aa2af;
+  --notes-color-page: #101216;
+  --notes-color-panel: #14171c;
+  --notes-color-layer: #1a1d24;
+  --notes-color-line: #282c35;
+  --notes-color-accent: #8ab0f5;
+  --notes-color-accent-soft: #1b2a45;
+  --notes-color-hover: rgb(255 255 255 / 0.06);
+  --notes-color-pressed: rgb(255 255 255 / 0.11);
+  --notes-color-code: #1c2027;
+  --notes-shadow-layer: 0 1rem 2.5rem rgb(0 0 0 / 0.45), 0 0.125rem 0.375rem rgb(0 0 0 / 0.3);
+
+  --sl-color-white: var(--notes-color-ink);
+  --sl-color-gray-1: var(--notes-color-ink);
+  --sl-color-gray-2: var(--notes-color-body);
+  --sl-color-gray-3: var(--notes-color-muted);
+  --sl-color-gray-4: #5d6471;
+  --sl-color-gray-5: var(--notes-color-line);
+  --sl-color-gray-6: var(--notes-color-layer);
+  --sl-color-black: var(--notes-color-page);
+  --sl-color-accent-low: var(--notes-color-accent-soft);
+  --sl-color-accent: var(--notes-color-accent);
+  --sl-color-accent-high: #c8d9fb;
+  --sl-color-text: var(--notes-color-body);
+  --sl-color-text-accent: var(--notes-color-accent);
+  --sl-color-bg: var(--notes-color-page);
+  --sl-color-bg-nav: var(--notes-color-page);
+  --sl-color-bg-sidebar: var(--notes-color-panel);
+  --sl-color-bg-inline-code: var(--notes-color-code);
+  --sl-color-hairline-light: var(--notes-color-line);
+  --sl-color-hairline: var(--notes-color-line);
+  --sl-color-hairline-shade: var(--notes-color-line);
+
+  --sl-text-base: var(--notes-text);
+  --sl-text-body: var(--notes-text);
+  --sl-text-code: var(--notes-text-nav);
+  --sl-text-code-sm: 0.875em;
+  --sl-text-h1: var(--notes-text-title);
+  --sl-text-h2: var(--notes-text-section);
+  --sl-text-h3: var(--notes-text-subsection);
+  --sl-text-h4: var(--notes-text);
+  --sl-text-h5: var(--notes-text);
+  --sl-text-h6: var(--notes-text);
+  --sl-line-height: var(--notes-line-height);
   --sl-line-height-headings: 1.25;
-  --sl-content-width: 58rem;
-  --sl-sidebar-width: 18rem;
-  --notes-left-sidebar-width: 18rem;
-  --notes-right-sidebar-width: 16rem;
+
+  /* The header is about two lines of note text tall. */
+  --sl-nav-height: calc(var(--notes-text) * 3);
+  --sl-nav-pad-x: var(--notes-space-2);
+  --sl-nav-pad-y: 0rem;
+  --sl-nav-gap: var(--notes-space-1);
+  --sl-menu-button-size: var(--notes-control-height);
+  --sl-sidebar-width: var(--notes-tree-width);
+  --sl-sidebar-pad-x: var(--notes-space-1);
+  --sl-content-width: var(--notes-column);
+  /* On a narrow screen the side margin of the column is one line of text. */
+  --sl-content-pad-x: calc(var(--notes-text) * var(--notes-line-height));
+  --sl-content-gap-y: var(--notes-space-paragraph);
+  --sl-content-margin-inline: auto;
 }
 
 :root[data-theme='light'] {
-  --sl-color-accent-low: hsl(216, 92%, 93%);
-  --sl-color-accent: hsl(218, 72%, 45%);
-  --sl-color-accent-high: hsl(220, 76%, 24%);
+  --notes-color-ink: #111827;
+  --notes-color-body: #374151;
+  --notes-color-muted: #5f6875;
+  --notes-color-page: #ffffff;
+  --notes-color-panel: #fafbfc;
+  --notes-color-layer: #ffffff;
+  --notes-color-line: #e4e7ec;
+  --notes-color-accent: #1f5ec7;
+  --notes-color-accent-soft: #e9effb;
+  --notes-color-hover: rgb(17 24 39 / 0.05);
+  --notes-color-pressed: rgb(17 24 39 / 0.09);
+  --notes-color-code: #f3f4f6;
+  --notes-shadow-layer: 0 1rem 2.5rem rgb(17 24 39 / 0.12), 0 0.125rem 0.375rem rgb(17 24 39 / 0.05);
+
+  --sl-color-gray-4: #9aa1ad;
+  --sl-color-gray-6: #f1f3f5;
+  --sl-color-gray-7: var(--notes-color-panel);
+  --sl-color-accent-high: #1a4a9c;
+  --sl-color-bg-nav: var(--notes-color-page);
+  --sl-color-bg-sidebar: var(--notes-color-panel);
+  --sl-color-bg-inline-code: var(--notes-color-code);
+  --sl-color-hairline-light: var(--notes-color-line);
+  --sl-color-hairline-shade: var(--notes-color-line);
 }
 
-.sl-markdown-content {
-  font-size: var(--sl-text-base);
+@media (min-width: 50rem) {
+  :root {
+    --sl-nav-pad-x: var(--notes-space-1);
+    /* With room to spare, the side margins grow to three or four lines of text. */
+    --sl-content-pad-x: clamp(
+      calc(var(--notes-text) * var(--notes-line-height)),
+      6vw,
+      calc(var(--notes-text) * var(--notes-line-height) * 3.5)
+    );
+  }
 }
 
-.sl-markdown-content strong {
+@keyframes notes-layer-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* One focus ring for every control, visible on any surface. */
+:is(a, button, summary, select, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--notes-color-accent);
+  outline-offset: 2px;
+}
+
+/* Header */
+
+.site-title {
+  color: var(--notes-color-accent);
+  font-size: var(--notes-text-nav);
   font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
-#starlight__sidebar .large,
-#starlight__sidebar [aria-current='page'],
-.right-sidebar-panel h2 {
+site-search button[data-open-modal] {
+  height: var(--notes-control-height);
+}
+
+site-search button[data-open-modal] > svg {
+  width: var(--notes-icon-size);
+  height: var(--notes-icon-size);
+  font-size: var(--notes-icon-size);
+}
+
+@media (min-width: 50rem) {
+  site-search button[data-open-modal] {
+    max-width: none;
+    padding-inline: var(--notes-space-1) calc(var(--notes-space-1) / 2);
+    border-color: var(--notes-color-line);
+    border-radius: var(--notes-radius-small);
+    background: var(--notes-color-panel);
+    color: var(--notes-color-muted);
+    font-size: var(--notes-text-control);
+  }
+
+  site-search button[data-open-modal]:hover {
+    border-color: var(--notes-color-line);
+    background: var(--notes-color-hover);
+    color: var(--notes-color-body);
+  }
+}
+
+site-search button[data-open-modal] > kbd {
+  border: 1px solid var(--notes-color-line);
+  border-radius: calc(var(--notes-radius-small) - 1px);
+  background: var(--notes-color-page);
+  color: var(--notes-color-muted);
+  font-size: var(--notes-text-control);
+  line-height: 1.5;
+}
+
+/* The theme switch shows the current theme on the button itself. */
+starlight-theme-select label {
+  --sl-label-icon-size: var(--notes-icon-size);
+  --sl-caret-size: var(--notes-icon-size);
+  --sl-inline-padding: var(--notes-space-1);
+  border-radius: var(--notes-radius-small);
+  color: var(--notes-color-body);
+}
+
+starlight-theme-select label:hover {
+  background: var(--notes-color-hover);
+  color: var(--notes-color-body);
+}
+
+starlight-theme-select select {
+  width: auto;
+  height: var(--notes-control-height);
+  margin-inline: 0;
+  padding-block: 0;
+  border-radius: var(--notes-radius-small);
+  font-size: var(--notes-text-control);
   font-weight: 500;
 }
 
+starlight-theme-select .label-icon {
+  inset-inline-start: var(--notes-space-1);
+}
+
+starlight-theme-select .caret {
+  inset-inline-end: var(--notes-space-1);
+}
+
+/* Notes tree */
+
+.sidebar-content {
+  gap: var(--notes-space-1);
+  /* The label of the sort button starts level with the first line of the note title. */
+  padding-block-start: calc(
+    var(--notes-top) + var(--notes-text-title) * 0.24 - var(--notes-control-height) / 2 +
+      var(--notes-text-control) * 0.36
+  );
+  padding-block-end: var(--notes-space-6);
+}
+
+/* The sort control is a quiet button with the current order written on it. */
 .notes-sort {
+  position: relative;
+  display: flex;
   flex: 0 0 auto;
-  margin-block-end: 0.75rem;
+  align-items: center;
+  align-self: flex-start;
+  border-radius: var(--notes-radius-small);
+  color: var(--notes-color-muted);
 }
 
-.notes-sort label {
-  display: block;
-  margin-block-end: 0.25rem;
-  color: var(--sl-color-gray-2);
-  font-size: var(--sl-text-xs);
-  font-weight: 500;
+.notes-sort:hover {
+  background: var(--notes-color-hover);
+}
+
+.notes-sort svg {
+  position: absolute;
+  inset-inline-start: var(--notes-space-1);
+  width: var(--notes-icon-size);
+  height: var(--notes-icon-size);
+  fill: none;
+  pointer-events: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: var(--notes-icon-stroke);
 }
 
 .notes-sort select {
-  width: 100%;
-  border: 1px solid var(--sl-color-gray-5);
-  border-radius: 0.4rem;
-  background: var(--sl-color-black);
-  color: var(--sl-color-white);
-  font: inherit;
-  font-size: var(--sl-text-sm);
-  padding: 0.45rem 0.6rem;
+  height: var(--notes-control-height);
+  padding-block: 0;
+  padding-inline: calc(var(--notes-space-1) * 2 + var(--notes-icon-size)) var(--notes-space-1);
+  border: 0;
+  border-radius: var(--notes-radius-small);
+  appearance: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: 500 var(--notes-text-control) / 1 var(--__sl-font);
 }
 
-.notes-sort select:focus {
-  border-color: var(--sl-color-accent);
-  outline: 2px solid var(--sl-color-accent-low);
-  outline-offset: 1px;
+.notes-sort option {
+  background: var(--notes-color-layer);
+  color: var(--notes-color-ink);
 }
 
-.toggle-left-side-bar-btn,
-.toggle-right-side-bar-btn {
-  border-color: var(--sl-color-gray-5);
-  border-radius: 0.35rem;
-  min-height: 1.75rem;
-  min-width: 1.75rem;
+#starlight__sidebar ul {
+  --sl-sidebar-item-padding-inline: var(--notes-space-1);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 
-.toggle-left-side-bar-btn:focus-visible,
-.toggle-right-side-bar-btn:focus-visible {
-  outline: 2px solid var(--sl-color-accent);
-  outline-offset: 2px;
+#starlight__sidebar .top-level > li + li {
+  margin-block-start: 0;
 }
+
+/* A folder and a note differ in weight and in the disclosure mark, not in size. */
+#starlight__sidebar .large {
+  color: var(--notes-color-ink);
+  font-size: var(--notes-text-nav);
+  font-weight: 600;
+}
+
+#starlight__sidebar summary {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: var(--notes-space-1);
+  min-height: var(--notes-row-height);
+  padding-block: 0;
+  border-radius: var(--notes-radius-small);
+}
+
+#starlight__sidebar summary .caret {
+  width: var(--notes-icon-size);
+  height: var(--notes-icon-size);
+  color: var(--notes-color-muted);
+  font-size: var(--notes-icon-size);
+  transition: none;
+}
+
+/* The name of a folder always takes one line. */
+#starlight__sidebar .group-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* An open folder stands apart from the next one, so its notes read as a group. */
+#starlight__sidebar details[open] {
+  margin-block-end: var(--notes-space-1);
+}
+
+/* Each level moves in by the width of the disclosure mark with its gap. The guide line runs
+   under the middle of the mark, and the names of the notes start where the folder name does. */
+#starlight__sidebar ul ul {
+  margin-block-start: 2px;
+  margin-inline-start: calc(var(--notes-space-1) + var(--notes-icon-size) / 2 - 0.5px);
+  padding-inline-start: calc(var(--notes-icon-size) / 2 - 0.5px);
+  border-inline-start: 1px solid var(--notes-color-line);
+}
+
+#starlight__sidebar ul ul li {
+  margin-inline-start: 0;
+  padding-inline-start: 0;
+  border-inline-start: 0;
+}
+
+#starlight__sidebar a {
+  display: flex;
+  align-items: center;
+  min-height: var(--notes-row-height);
+  padding-block: calc(var(--notes-space-1) / 2);
+  border-radius: var(--notes-radius-small);
+  color: var(--notes-color-body);
+  font-size: var(--notes-text-nav);
+  line-height: 1.4;
+}
+
+/* A note without a folder has no mark, so its name lines up with the folder names. */
+#starlight__sidebar .top-level > li > a {
+  padding-inline-start: calc(var(--notes-space-1) * 2 + var(--notes-icon-size));
+}
+
+/* A long name takes two lines at most. The names in one folder often start alike and differ
+   at the end, so one line would hide the difference. */
+#starlight__sidebar a > span {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+#starlight__sidebar :is(a, summary):hover {
+  background: var(--notes-color-hover);
+}
+
+#starlight__sidebar a:is(:hover, :focus) {
+  color: var(--notes-color-ink);
+}
+
+#starlight__sidebar a[aria-current='page'] {
+  background: var(--notes-color-accent-soft);
+  color: var(--notes-color-accent);
+  font-weight: 600;
+}
+
+#starlight__sidebar :is(a, summary):focus-visible {
+  outline-offset: -2px;
+}
+
+/* Contents of the page */
+
+.right-sidebar-panel {
+  /* The label starts level with the first line of the note title. */
+  padding-block: calc(
+      var(--notes-top) + var(--notes-text-title) * 0.24 - var(--notes-text-control) * 0.34
+    )
+    var(--notes-space-6);
+  padding-inline: var(--notes-space-2);
+}
+
+.right-sidebar-panel > .sl-container {
+  width: auto;
+  max-width: none;
+}
+
+.right-sidebar-panel h2 {
+  margin-block-end: var(--notes-space-1);
+  color: var(--notes-color-muted);
+  font-size: var(--notes-text-control);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.right-sidebar-panel starlight-toc nav > ul {
+  border-inline-start: 1px solid var(--notes-color-line);
+}
+
+.right-sidebar-panel starlight-toc a {
+  --pad-inline: var(--notes-space-1);
+  margin-inline-start: -1px;
+  padding-block: calc(var(--notes-space-1) / 2);
+  padding-inline: calc(var(--notes-space-1) * 1.5 + var(--depth) * var(--notes-space-2))
+    var(--notes-space-1);
+  border-inline-start: 2px solid transparent;
+  border-radius: 0;
+  color: var(--notes-color-body);
+  font-size: var(--notes-text-nav);
+  line-height: 1.4;
+}
+
+.right-sidebar-panel starlight-toc a:hover {
+  color: var(--notes-color-ink);
+}
+
+.right-sidebar-panel starlight-toc a[aria-current='true'] {
+  border-inline-start-color: var(--notes-color-accent);
+  color: var(--notes-color-accent);
+  font-weight: 600;
+}
+
+/* Panels: pinned, floating, hidden */
 
 .notes-sidebar-resizer {
   position: fixed;
   z-index: 6;
   inset-block: var(--sl-nav-height) 0;
   display: none;
-  width: 0.5rem;
+  width: var(--notes-space-1);
   cursor: col-resize;
   touch-action: none;
 }
 
+/* The border of a panel is a plain thin line, and only the cursor says that it can be dragged.
+   The line gets heavier while it moves. */
 .notes-sidebar-resizer::after {
   position: absolute;
   inset-block: 0;
@@ -103,28 +468,28 @@
   width: 1px;
   background: transparent;
   content: '';
-  transition: background-color 0.15s;
-}
-
-.notes-sidebar-resizer:hover::after,
-.notes-sidebar-resizer:focus-visible::after {
-  background: var(--sl-color-gray-4);
 }
 
 body.notes-sidebar-resizing .notes-sidebar-resizer::after {
-  background: var(--sl-color-accent);
+  background: var(--sl-color-gray-4);
 }
 
 .notes-sidebar-resizer:focus-visible {
   outline: none;
 }
 
+.notes-sidebar-resizer:focus-visible::after {
+  inset-inline-start: calc(50% - 1px);
+  width: 2px;
+  background: var(--notes-color-accent);
+}
+
 .notes-sidebar-resizer[data-notes-resizer='left'] {
-  inset-inline-start: calc(var(--notes-left-sidebar-width) - 0.25rem);
+  inset-inline-start: calc(var(--notes-tree-width) - var(--notes-space-1) / 2);
 }
 
 .notes-sidebar-resizer[data-notes-resizer='right'] {
-  inset-inline-end: calc(var(--notes-right-sidebar-width) - 0.25rem);
+  inset-inline-end: calc(var(--notes-toc-width) - var(--notes-space-1) / 2);
 }
 
 body.notes-sidebar-resizing {
@@ -138,6 +503,253 @@ body.notes-sidebar-resizing {
   min-width: 0;
 }
 
+@media (min-width: 50rem) {
+  .notes-sidebar-resizer[data-notes-resizer='left'] {
+    display: block;
+  }
+
+  .sidebar-pane {
+    scrollbar-gutter: auto;
+    scrollbar-width: thin;
+  }
+
+  /* An unpinned tree gives its place to the note and floats over it while the pointer is on
+     the tree button. It is a layer like a menu: page surface, thin border, soft shadow. */
+  :root[data-notes-tree='unpinned'] {
+    --sl-content-inline-start: 0rem;
+  }
+
+  :root[data-notes-tree='unpinned'] .sidebar-pane {
+    inset-block: calc(var(--sl-nav-height) + var(--notes-space-1)) auto;
+    inset-inline-start: var(--notes-space-1);
+    max-height: calc(100vh - var(--sl-nav-height) - var(--notes-space-2));
+    border: 1px solid var(--notes-color-line);
+    border-radius: var(--notes-radius-large);
+    background: var(--notes-color-layer);
+    box-shadow: var(--notes-shadow-layer);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.12s ease-out, visibility 0s 0.12s;
+  }
+
+  :root[data-notes-tree='unpinned'][data-notes-peek] .sidebar-pane {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.12s ease-out;
+  }
+
+  :root[data-notes-tree='unpinned'] .sidebar-content {
+    padding-block: var(--notes-space-1) var(--notes-space-2);
+  }
+
+  :root[data-notes-tree='unpinned'] .notes-sidebar-resizer[data-notes-resizer='left'] {
+    display: none;
+  }
+}
+
+@media (min-width: 72rem) {
+  /* The column keeps its width and stands in the middle of the space between the panels.
+     Spare width of the window goes into the margins around it, not into the lines. */
+  .main-pane {
+    --sl-content-margin-inline: auto;
+    flex: 1 1 0;
+    width: auto;
+  }
+
+  .right-sidebar-container {
+    flex: 0 0 var(--notes-toc-width);
+    width: var(--notes-toc-width);
+  }
+
+  .right-sidebar {
+    inset-inline-end: 0;
+    width: var(--notes-toc-width);
+    border-inline-start-color: var(--notes-color-line);
+  }
+
+  .notes-sidebar-resizer[data-notes-resizer='right'] {
+    display: block;
+  }
+
+  :root[data-notes-toc='hidden'] :is(.right-sidebar-container, .notes-sidebar-resizer[data-notes-resizer='right']),
+  :root:not([data-has-toc]) .notes-sidebar-resizer[data-notes-resizer='right'] {
+    display: none;
+  }
+}
+
+/* Note */
+
+.content-panel {
+  padding-block: var(--notes-space-4);
+}
+
+.content-panel:first-child {
+  padding-block-start: var(--notes-top);
+}
+
+.content-panel:last-child {
+  padding-block-end: var(--notes-space-12);
+}
+
+.sl-markdown-content {
+  color: var(--notes-color-body);
+  font-size: var(--notes-text);
+}
+
+.sl-markdown-content strong {
+  color: var(--notes-color-ink);
+  font-weight: 600;
+}
+
+.sl-markdown-content a:not(:where(.not-content *)) {
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+.sl-markdown-content a:hover:not(:where(.not-content *)) {
+  color: var(--notes-color-accent);
+  text-decoration-color: currentColor;
+}
+
+/* A heading belongs to the text below it: the space above is several times the space below. */
+.sl-markdown-content .sl-heading-wrapper {
+  margin-block-start: var(--notes-space-4);
+}
+
+.sl-markdown-content :is(h2, h3, h4, h5, h6):not(:where(.not-content *)) {
+  color: var(--notes-color-ink);
+  font-weight: 600;
+}
+
+.sl-markdown-content h2:not(:where(.not-content *)) {
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+.sl-markdown-content h3:not(:where(.not-content *)) {
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.sl-markdown-content :is(h4, h5, h6):not(:where(.not-content *)) {
+  line-height: 1.4;
+}
+
+/* A section reads as a unit: a line and a large space set its heading apart from the text
+   before it, with the same space on both sides of the line. */
+.sl-markdown-content .sl-heading-wrapper.level-h2 {
+  margin-block-start: var(--notes-space-6);
+  padding-block-start: var(--notes-space-6);
+  border-block-start: 1px solid var(--notes-color-line);
+}
+
+.sl-markdown-content > .sl-heading-wrapper.level-h2:first-child {
+  margin-block-start: 0;
+  padding-block-start: 0;
+  border-block-start: 0;
+}
+
+/* Code, diagrams, callouts, tables, and quotes stand four steps away from the text. */
+.sl-markdown-content
+  :is(.notes-code, .mermaid-block, .mermaid, .starlight-aside, table, blockquote, details):not(:where(.not-content *)) {
+  margin-block: var(--notes-space-4);
+}
+
+.sl-markdown-content .sl-heading-wrapper + * {
+  margin-block-start: var(--notes-space-1);
+}
+
+.sl-markdown-content .sl-heading-wrapper.level-h2 + * {
+  margin-block-start: var(--notes-space-2);
+}
+
+.sl-markdown-content .sl-heading-wrapper + .sl-heading-wrapper {
+  margin-block-start: var(--notes-space-2);
+}
+
+.sl-markdown-content > :first-child {
+  margin-block-start: 0;
+}
+
+/* List items stand half as far apart as paragraphs. */
+.sl-markdown-content li + li:not(:where(.not-content *)) {
+  margin-block-start: calc(var(--notes-space-paragraph) / 2);
+}
+
+.sl-markdown-content li > :is(ul, ol):not(:where(.not-content *)) {
+  margin-block-start: calc(var(--notes-space-paragraph) / 2);
+}
+
+/* Inline code is a little smaller than the text around it and does not push the lines apart. */
+.sl-markdown-content :not(pre) > code:not(:where(.not-content *)) {
+  padding: 0.1em 0.35em;
+  border-radius: var(--notes-radius-small);
+  color: var(--notes-color-ink);
+}
+
+.sl-markdown-content a code:not(:where(.not-content *)) {
+  color: inherit;
+}
+
+.sl-markdown-content :is(th, td):not(:where(.not-content *)) {
+  border-block-end-color: var(--notes-color-line);
+}
+
+.sl-markdown-content th:not(:where(.not-content *)) {
+  color: var(--notes-color-ink);
+}
+
+.sl-markdown-content blockquote:not(:where(.not-content *)) {
+  border-inline-start-color: var(--notes-color-line);
+  color: var(--notes-color-muted);
+}
+
+/* A callout is a light surface with an icon and a title. It is no louder than the text. */
+.sl-markdown-content .starlight-aside {
+  padding: var(--notes-space-2);
+  border: 0;
+  border-radius: var(--notes-radius-large);
+  background: color-mix(in srgb, var(--sl-color-asides-border) 9%, var(--notes-color-page));
+  color: var(--notes-color-body);
+}
+
+.sl-markdown-content .starlight-aside__title {
+  gap: var(--notes-space-1);
+  color: var(--notes-color-ink);
+  font-size: var(--notes-text);
+  font-weight: 600;
+}
+
+.sl-markdown-content .starlight-aside__icon {
+  color: var(--sl-color-asides-text-accent);
+  font-size: 1.125em;
+}
+
+.sl-markdown-content .starlight-aside__title + .starlight-aside__content {
+  margin-block-start: var(--notes-space-1);
+}
+
+.sl-markdown-content .starlight-aside__content a {
+  color: var(--notes-color-accent);
+}
+
+.sl-markdown-content .starlight-aside code:not(:where(.not-content *)) {
+  background: var(--notes-color-hover);
+}
+
+/* Checkbox lists carry their own numbers ("1.", "a."), and icon lists (✅ ⚠️ ❌) their own
+   marker, so drop the bullets. */
+.sl-markdown-content ul.contains-task-list,
+.sl-markdown-content ul.icon-list {
+  list-style: none;
+}
+
+.legacy-anchor {
+  scroll-margin-top: 6rem;
+}
+
+/* Source pages */
+
 .source-view,
 .source-code {
   max-width: 100%;
@@ -145,18 +757,18 @@ body.notes-sidebar-resizing {
 
 .source-path {
   overflow-wrap: anywhere;
-  color: var(--sl-color-gray-2);
+  color: var(--notes-color-muted);
   font-family: var(--__sl-font-mono);
-  font-size: var(--sl-text-sm);
+  font-size: var(--notes-text-nav);
 }
 
 .source-code pre {
   box-sizing: border-box;
   max-width: 100%;
   overflow-x: auto;
-  border: 1px solid var(--sl-color-gray-5);
-  border-radius: 0.5rem;
-  padding: 1rem;
+  border: 1px solid var(--notes-color-line);
+  border-radius: var(--notes-radius-large);
+  padding: var(--notes-space-2);
 }
 
 /* Shiki runs with defaultColor: false, so each span only carries the theme variables. */
@@ -180,18 +792,88 @@ body.notes-sidebar-resizing {
 
 .source-code .line:target,
 .source-code .line.is-range {
-  background: var(--sl-color-accent-low);
-  box-shadow: -0.5rem 0 0 var(--sl-color-accent-low);
+  background: var(--notes-color-accent-soft);
+  box-shadow: calc(var(--notes-space-1) * -1) 0 0 var(--notes-color-accent-soft);
+}
+
+/* Diagrams: a frame with a thin header, the caption on the left and the zoom on the right */
+
+.mermaid-block {
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--notes-color-line);
+  border-radius: var(--notes-radius-large);
+  background: var(--notes-color-page);
+}
+
+.mermaid-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--notes-space-1);
+  padding-block: calc(var(--notes-space-1) / 2);
+  padding-inline: var(--notes-space-2) calc(var(--notes-space-1) / 2);
+  border-block-end: 1px solid var(--notes-color-line);
+}
+
+.mermaid-caption {
+  color: var(--notes-color-muted);
+  font-size: var(--notes-text-control);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.mermaid-tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.mermaid-tools button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--notes-control-height);
+  height: var(--notes-control-height);
+  margin: 0 !important;
+  padding: 0 var(--notes-space-1);
+  border: 0;
+  border-radius: var(--notes-radius-small);
+  background: transparent;
+  color: var(--notes-color-body);
+  cursor: pointer;
+  font: 500 var(--notes-text-control) / 1 var(--__sl-font-mono);
+}
+
+.mermaid-tools button:hover {
+  background: var(--notes-color-hover);
+}
+
+.mermaid-tools button:active {
+  background: var(--notes-color-pressed);
+}
+
+.mermaid-tools svg {
+  width: var(--notes-icon-size);
+  height: var(--notes-icon-size);
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: var(--notes-icon-stroke);
+}
+
+.mermaid-header + .mermaid-viewport {
+  margin-block-start: 0;
 }
 
 .mermaid-viewport {
   position: relative;
   max-width: 100%;
   overflow: hidden;
-  margin-block: 1rem;
-  border: 1px solid var(--sl-color-gray-5);
-  border-radius: 0.5rem;
-  background: color-mix(in srgb, var(--sl-color-gray-6), transparent 45%);
+  background: var(--notes-color-panel);
   touch-action: none;
 }
 
@@ -219,170 +901,94 @@ body.notes-sidebar-resizing {
 .mermaid-viewport > .mermaid-pane > pre.mermaid {
   min-width: 100%;
   margin: 0 !important;
+  padding-block: var(--notes-space-2);
   border: 0 !important;
   border-radius: 0;
+  background: transparent !important;
 }
 
-.mermaid-tools {
-  position: absolute;
-  z-index: 2;
-  inset-block-start: 0.5rem;
-  inset-inline-end: 0.5rem;
+.mermaid-block:fullscreen {
   display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  opacity: 0.82;
-  transition: opacity 0.15s;
-}
-
-.mermaid-viewport:hover .mermaid-tools,
-.mermaid-viewport:focus-within .mermaid-tools,
-.mermaid-viewport.is-zoomed .mermaid-tools {
-  opacity: 1;
-}
-
-.mermaid-tools button {
-  display: inline-flex;
-  flex: 0 0 2rem;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  min-width: 2rem;
-  min-height: 2rem;
-  margin: 0 !important;
-  padding: 0;
-  border: 1px solid var(--sl-color-gray-4);
-  border-radius: 0.35rem;
-  background: var(--sl-color-bg-nav);
-  color: var(--sl-color-text);
-  cursor: pointer;
-  font: 600 var(--sl-text-xs) / 1 var(--__sl-font-mono);
-}
-
-.mermaid-tools button[data-mermaid-action='reset'] {
-  flex-basis: 2.75rem;
-  width: 2.75rem;
-}
-
-.mermaid-tools button:hover,
-.mermaid-tools button:focus-visible {
-  border-color: var(--sl-color-accent);
-  background: var(--sl-color-accent-low);
-  color: var(--sl-color-accent-high);
-}
-
-.mermaid-tools button:focus-visible {
-  outline: 2px solid var(--sl-color-accent);
-  outline-offset: 1px;
-}
-
-.mermaid-viewport:fullscreen {
+  flex-direction: column;
   width: 100vw;
   height: 100vh;
   margin: 0;
   border: 0;
   border-radius: 0;
-  background: var(--sl-color-bg);
 }
 
-.mermaid-viewport:fullscreen .mermaid-pane {
+.mermaid-block:fullscreen .mermaid-viewport {
+  flex: 1 1 0;
+}
+
+.mermaid-block:fullscreen .mermaid-pane {
   width: 100%;
   min-height: 100%;
 }
 
-.legacy-anchor {
-  scroll-margin-top: 6rem;
+/*
+ * Diagrams are drawn in the palette of the site: neutral lines, and boxes on the layer surface.
+ * Mermaid scopes its theme by the id of each diagram, so only `!important` gets past it. A color
+ * that the note sets itself, with `classDef` or `style`, is `!important` too and still wins.
+ */
+pre.mermaid svg {
+  --notes-diagram-line: var(--notes-color-muted);
+  font-family: var(--__sl-font) !important;
+}
+
+pre.mermaid svg :is(.node, .statediagram-state) :is(rect, polygon, ellipse, path, .label-container, .outer),
+pre.mermaid svg :is(rect.actor, .note, .labelBox, .classGroup rect, .entityBox) {
+  fill: var(--notes-color-layer) !important;
+  stroke: color-mix(in srgb, var(--notes-color-accent) 45%, var(--notes-color-line)) !important;
+}
+
+pre.mermaid svg :is(.cluster rect, .statediagram-cluster rect) {
+  fill: var(--notes-color-panel) !important;
+  stroke: var(--notes-color-line) !important;
+}
+
+pre.mermaid svg :is(.actor-line, .loopLine, .actor-man line, .actor-man circle) {
+  stroke: color-mix(in srgb, var(--notes-color-accent) 45%, var(--notes-color-line)) !important;
+}
+
+pre.mermaid svg .actor-man circle {
+  fill: var(--notes-color-layer) !important;
+}
+
+pre.mermaid svg .sequenceNumber {
+  fill: var(--notes-color-page) !important;
+}
+
+pre.mermaid svg :is(.flowchart-link, .transition, .relation, .messageLine0, .messageLine1, .relationshipLine, .edgePath .path) {
+  stroke: var(--notes-diagram-line) !important;
+}
+
+pre.mermaid svg :is(.marker, .arrowheadPath, [id$='barbEnd'], marker path) {
+  fill: var(--notes-diagram-line) !important;
+  stroke: var(--notes-diagram-line) !important;
+}
+
+pre.mermaid svg :is(.edgeLabel, .edgeLabel p, .labelBkg) {
+  background-color: var(--notes-color-panel) !important;
+  color: var(--notes-color-muted) !important;
+}
+
+pre.mermaid svg .edgeLabel rect {
+  fill: var(--notes-color-panel) !important;
+}
+
+pre.mermaid svg :is(.nodeLabel, .label, .cluster-label) {
+  color: var(--notes-color-ink);
+}
+
+pre.mermaid svg :is(text, .messageText, .loopText, .noteText) {
+  fill: var(--notes-color-ink) !important;
+  stroke: none !important;
 }
 
 @media (max-width: 50rem) {
   .main-frame {
     padding-inline-start: 0 !important;
-  }
-}
-
-@media (min-width: 50.001rem) {
-  :root {
-    --sl-text-h1: 2.25rem;
-    --sl-text-h2: 1.75rem;
-    --sl-text-h3: 1.375rem;
-  }
-
-  .sidebar-pane {
-    border-inline-end-color: transparent;
-  }
-
-  .notes-sidebar-resizer[data-notes-resizer='left'] {
-    display: block;
-  }
-
-  body.main-side-bar-collapsed .sidebar-pane {
-    scrollbar-gutter: auto;
-  }
-
-  body.main-side-bar-collapsed .notes-sort {
-    visibility: hidden;
-    pointer-events: none;
-  }
-
-  body.main-side-bar-collapsed .sidebar-content {
-    padding-inline: 0;
-  }
-
-  body.main-side-bar-collapsed .toggle-left-side-bar-btn {
-    align-self: center;
-  }
-
-  body.main-side-bar-collapsed .notes-sidebar-resizer[data-notes-resizer='left'] {
-    display: none;
-  }
-}
-
-@media (min-width: 72rem) {
-  .right-sidebar {
-    border-inline-start-color: transparent;
-  }
-
-  .main-pane {
-    flex: 1 1 0;
-    width: auto !important;
-  }
-
-  body:not(.right-side-bar-collapsed) .right-sidebar-container {
-    flex: 0 0 var(--notes-right-sidebar-width);
-    width: var(--notes-right-sidebar-width) !important;
-  }
-
-  body:not(.right-side-bar-collapsed) .right-sidebar {
-    inset-inline-end: 0;
-    width: var(--notes-right-sidebar-width) !important;
-  }
-
-  .notes-sidebar-resizer[data-notes-resizer='right'] {
-    display: block;
-  }
-
-  body.right-side-bar-collapsed .right-sidebar-panel {
-    padding-inline: 0;
-  }
-
-  body.right-side-bar-collapsed .right-sidebar {
-    inset-inline-end: 0;
-    width: 2.75rem !important;
-  }
-
-  body.right-side-bar-collapsed .right-sidebar-panel > .sl-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  body.right-side-bar-collapsed .toggle-right-side-bar-btn {
-    align-self: center;
-  }
-
-  body.right-side-bar-collapsed .notes-sidebar-resizer[data-notes-resizer='right'] {
-    display: none;
   }
 }
 
@@ -398,14 +1004,8 @@ body.notes-sidebar-resizing {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mermaid-pane {
-    transition: none;
+  .mermaid-pane,
+  .sidebar-pane {
+    transition: none !important;
   }
-}
-
-/* Checkbox lists carry their own numbers ("1.", "a."), and icon lists (✅ ⚠️ ❌) their own
-   marker, so drop the bullets. */
-.sl-markdown-content ul.contains-task-list,
-.sl-markdown-content ul.icon-list {
-  list-style: none;
 }

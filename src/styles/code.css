@@ -2,14 +2,16 @@
   position: relative;
 }
 
+/* A block is never wider than the column: a long line scrolls inside the block. */
 .notes-code pre {
   box-sizing: border-box;
   max-width: 100%;
   overflow-x: auto;
-  border: 1px solid var(--sl-color-gray-5);
-  border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
+  border: 1px solid var(--notes-color-line);
+  border-radius: var(--notes-radius-large);
+  padding: var(--notes-space-2);
   font-size: var(--sl-text-code);
+  line-height: 1.6;
 }
 
 /* Shiki runs with defaultColor: false, so each span only carries the theme variables. */
@@ -27,19 +29,24 @@
 
 .notes-code-copy {
   position: absolute;
-  top: 0.4rem;
-  right: 0.4rem;
+  top: var(--notes-space-1);
+  right: var(--notes-space-1);
   display: grid;
   place-items: center;
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid var(--sl-color-gray-5);
-  border-radius: 0.375rem;
-  background: var(--sl-color-bg);
-  color: var(--sl-color-gray-2);
+  margin: 0 !important;
+  width: var(--notes-control-height);
+  height: var(--notes-control-height);
+  border: 1px solid var(--notes-color-line);
+  border-radius: var(--notes-radius-small);
+  background: var(--notes-color-layer);
+  color: var(--notes-color-muted);
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.15s;
+  transition: opacity 0.12s;
+}
+
+.notes-code-copy:hover {
+  color: var(--notes-color-ink);
 }
 
 .notes-code:hover .notes-code-copy,
@@ -49,11 +56,11 @@
 }
 
 .notes-code-copy svg {
-  width: 1rem;
-  height: 1rem;
+  width: var(--notes-icon-size);
+  height: var(--notes-icon-size);
   fill: none;
   stroke: currentColor;
-  stroke-width: 2;
+  stroke-width: var(--notes-icon-stroke);
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -61,11 +68,12 @@
 .notes-code-copy[data-copied]::after {
   content: 'Copied!';
   position: absolute;
-  right: calc(100% + 0.4rem);
-  padding: 0.2rem 0.5rem;
-  border-radius: 0.25rem;
-  background: var(--sl-color-gray-6);
-  color: var(--sl-color-white);
-  font-size: var(--sl-text-xs);
+  right: calc(100% + var(--notes-space-1));
+  padding: calc(var(--notes-space-1) / 2) var(--notes-space-1);
+  border: 1px solid var(--notes-color-line);
+  border-radius: var(--notes-radius-small);
+  background: var(--notes-color-layer);
+  color: var(--notes-color-body);
+  font-size: var(--notes-text-control);
   white-space: nowrap;
 }

@@ -3,7 +3,6 @@ import path from 'node:path';
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import mermaid from 'astro-mermaid';
-import starlightFullviewMode from 'starlight-fullview-mode';
 
 import { options, outRoot } from './scripts/paths.mjs';
 import { shellSidebar } from './scripts/shell.mjs';
@@ -75,24 +74,16 @@ export default defineConfig({
       customCss: [source('styles/notes.css'), source('styles/code.css')],
       components: {
         Head: source('components/Head.astro'),
+        Header: source('components/Header.astro'),
         PageTitle: source('components/PageTitle.astro'),
         Pagination: source('components/Pagination.astro'),
+        Sidebar: source('components/Sidebar.astro'),
       },
       head: [
         {
           tag: 'meta',
           attrs: { name: 'robots', content: 'noindex,nofollow,noarchive' },
         },
-      ],
-      plugins: [
-        starlightFullviewMode({
-          leftSidebarEnabled: true,
-          rightSidebarEnabled: true,
-          leftSidebarExpandedWidth: 'var(--notes-left-sidebar-width)',
-          rightSidebarExpandedWidth: 'var(--notes-right-sidebar-width)',
-          leftSidebarCollapsedWidth: '2.75rem',
-          rightSidebarCollapsedWidth: '2.75rem',
-        }),
       ],
     }),
   ],

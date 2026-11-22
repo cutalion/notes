@@ -1,0 +1,25 @@
+---
+import Default from '@astrojs/starlight/components/Sidebar.astro';
+
+// The script in `Head.astro` sorts the tree by the chosen order and remembers the choice.
+const orders = [
+  ['recent-desc', 'Recent first'],
+  ['recent-asc', 'Oldest first'],
+  ['title-asc', 'Title A–Z'],
+  ['title-desc', 'Title Z–A'],
+];
+---
+
+<label class="notes-sort" data-notes-sort>
+  <span class="sr-only">Sort notes</span>
+  <svg aria-hidden="true" viewBox="0 0 24 24">
+    <path d="M7 4v16"></path>
+    <path d="m3 8 4-4 4 4"></path>
+    <path d="M17 20V4"></path>
+    <path d="m21 16-4 4-4-4"></path>
+  </svg>
+  <select id="notes-sidebar-sort" autocomplete="off">
+    {orders.map(([value, text]) => <option value={value}>{text}</option>)}
+  </select>
+</label>
+<Default><slot /></Default>
