@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { createNoteRenderer } from '../../scripts/render-note.mjs';
+import { createNoteRenderer, mermaidTitle } from '../../scripts/render-note.mjs';
 
 function temporaryDirectory(t, prefix) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
@@ -31,6 +31,22 @@ flowchart LR
   A --> B
 \`\`\`
 `;
+
+test('takes the title of a diagram out of its source', () => {
+  assert.deepEqual(
+    mermaidTitle('---\ntitle: "Order steps"\n---\nflowchart LR\n  A --> B'),
+    { title: 'Order steps', code: 'flowchart LR\n  A --> B' },
+  );
+  // The rest of the front matter stays for Mermaid.
+  assert.deepEqual(
+    mermaidTitle('---\ntitle: Order steps\nconfig:\n  look: classic\n---\nflowchart LR\n  A --> B'),
+    { title: 'Order steps', code: '---\nconfig:\n  look: classic\n---\nflowchart LR\n  A --> B' },
+  );
+  // An accessible title is not drawn in the picture, so the source keeps it.
+  const sequence = 'sequenceDiagram\n  accTitle: Capture\n  A->>B: capture';
+  assert.deepEqual(mermaidTitle(sequence), { title: 'Capture', code: sequence });
+  assert.deepEqual(mermaidTitle('flowchart LR\n  A --> B'), { title: '', code: 'flowchart LR\n  A --> B' });
+});
 
 test('renders a note body with Starlight asides, heading links, highlighted code and mermaid', async (t) => {
   const root = temporaryDirectory(t, 'notes-root-');

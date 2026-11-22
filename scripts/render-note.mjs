@@ -57,11 +57,29 @@ async function loadStarlightPlugins(cacheRoot, hash) {
   return import(pathToFileURL(outfile).href);
 }
 
+// The header of a diagram block shows the title of the diagram. Mermaid draws a `title` from the
+// front matter inside the picture too, so that line leaves the source and the title is not shown
+// twice. An `accTitle` is not drawn, so it stays where it is.
+export function mermaidTitle(source) {
+  const unquoted = (value) => value.trim().replace(/^(["'])(.*)\1$/, '$2');
+  const frontMatter = source.match(/^\s*---\n([\s\S]*?)\n---[ \t]*\n?/);
+  const titleLine = frontMatter?.[1].match(/^title:[ \t]*(.+)$/m);
+  if (titleLine) {
+    const rest = frontMatter[1].replace(titleLine[0], '').trim();
+    const code = source.slice(frontMatter[0].length);
+    return { title: unquoted(titleLine[1]), code: rest ? `---\n${rest}\n---\n${code}` : code };
+  }
+  const accessible = source.match(/^[ \t]*accTitle:[ \t]*(.+)$/m);
+  return { title: accessible ? unquoted(accessible[1]) : '', code: source };
+}
+
 function remarkMermaid() {
   return (tree) => {
     visit(tree, 'code', (node, index, parent) => {
       if (node.lang !== 'mermaid') return;
-      parent.children[index] = { type: 'html', value: `<pre class="mermaid">${escapeHtml(node.value)}</pre>` };
+      const { title, code } = mermaidTitle(node.value);
+      const attribute = title ? ` data-notes-title="${escapeHtml(title).replaceAll('"', '&quot;')}"` : '';
+      parent.children[index] = { type: 'html', value: `<pre class="mermaid"${attribute}>${escapeHtml(code)}</pre>` };
     });
   };
 }

@@ -229,7 +229,8 @@ import Default from '@astrojs/starlight/components/Head.astro';
     header.className = 'mermaid-header';
     const caption = document.createElement('span');
     caption.className = 'mermaid-caption';
-    caption.textContent = 'Diagram';
+    // The build moves the title of a diagram from its source into this attribute.
+    caption.textContent = diagram.dataset.notesTitle || 'Diagram';
     const viewport = document.createElement('div');
     viewport.className = 'mermaid-viewport';
     const pane = document.createElement('div');
@@ -282,6 +283,21 @@ import Default from '@astrojs/starlight/components/Head.astro';
       pane.style.transition = 'none';
       pane.style.transform = '';
       viewport.style.height = '';
+      // Mermaid shrinks a picture to the width it gets. A picture that is wider than the column
+      // at its natural size takes the margins of the column first, and shrinks only after that.
+      // A few pixels are not worth a step out of the column.
+      delete block.dataset.wide;
+      const frame = getComputedStyle(diagram);
+      const around = block.offsetWidth - viewport.clientWidth
+        + parseFloat(frame.paddingLeft) + parseFloat(frame.paddingRight);
+      // A tall picture is shrunk to the height limit below, and needs only the width it has then.
+      const box = svg.viewBox.baseVal;
+      const tall = parseFloat(frame.paddingTop) + parseFloat(frame.paddingBottom) + box.height;
+      const natural = Math.ceil(box.width * Math.min(1, window.innerHeight * 0.8 / tall) + around);
+      if (!isFullscreen && block.parentElement?.matches('.sl-markdown-content') && natural > block.offsetWidth + 8) {
+        block.style.setProperty('--notes-natural-width', `${natural}px`);
+        block.dataset.wide = '';
+      }
       const rect = svg.getBoundingClientRect();
       // The SVG may already sit centered inside the pane; translate relative to that position.
       const svgLeft = rect.left - pane.getBoundingClientRect().left;
@@ -383,6 +399,29 @@ import Default from '@astrojs/starlight/components/Head.astro';
     });
   }
 
+  // A table that cannot fit in the column even with every cell wrapped grows into the margins
+  // of the column. If the margins are not enough either, it scrolls inside itself.
+  function installWideTables() {
+    const pane = document.querySelector('.main-pane');
+    const tables = [...document.querySelectorAll<HTMLElement>('.sl-markdown-content > table')];
+    if (!pane || !tables.length) return;
+    const overflows = (table: HTMLElement) => table.scrollWidth > table.clientWidth;
+    const measure = () => {
+      for (const table of tables) {
+        delete table.dataset.wide;
+        delete table.dataset.scroll;
+        table.removeAttribute('tabindex');
+        if (!overflows(table)) continue;
+        table.dataset.wide = '';
+        if (!overflows(table)) continue;
+        table.dataset.scroll = '';
+        // A scrolling block must be reachable from the keyboard.
+        table.tabIndex = 0;
+      }
+    };
+    new ResizeObserver(measure).observe(pane);
+  }
+
   function installCodeCopy() {
     for (const button of document.querySelectorAll<HTMLButtonElement>('.notes-code-copy')) {
       let resetTimer: number | undefined;
@@ -413,6 +452,7 @@ import Default from '@astrojs/starlight/components/Head.astro';
     installSidebarSorting();
     installTreeTooltips();
     installCodeCopy();
+    installWideTables();
     installMermaidTools();
     requestAnimationFrame(installSidebarResizers);
   });

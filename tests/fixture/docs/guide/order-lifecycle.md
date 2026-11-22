@@ -12,6 +12,9 @@ The shop itself is small. It has three models that matter here, [`Order`](../../
 An order is created as `pending`, becomes `paid` when the provider confirms the capture, becomes `shipped` when the carrier scans the parcel, and may become `refunded` at any point after it was paid.
 
 ```mermaid
+---
+title: The four steps of an order
+---
 flowchart LR
   Cart --> Order --> Payment --> Shipment
 ```
@@ -72,6 +75,35 @@ A reservation is not a sale. It lowers the number that the storefront shows as a
 | `released_at` | timestamp | When the hold was dropped, or empty while it is active |
 | `released_by` | string | `expiry`, `payment`, or `cancellation` |
 
+#### Where the hold is visible
+
+A table with prose in its cells fits in the column of text, because the prose wraps.
+
+| Surface | Reads from | Shows the hold | Refresh | Owner | On a stale read |
+|---|---|---|---|---|---|
+| Storefront product page | `stock_levels` cache | As a lower available number | Every 30 seconds | catalog | The buyer may see one unit more than there is |
+| Cart | `reservations` table | As a countdown next to the line | On every request | checkout | Never stale, the read is direct |
+| Warehouse picking screen | `reservations` table | As units that must not be picked | On every scan | logistics | Never stale, the read is direct |
+| Finance export | Nightly snapshot | Not shown | Once a night | billing | A hold is not money, so nothing is lost |
+
+The jobs that touch a reservation are named in code, and code does not wrap. This table does not fit in the column, so it grows into the margins.
+
+| Job | Queue | Runs | Timeout | Retries | Deduplicated by |
+|---|---|---|---|---|---|
+| `Reservations::ExpireJob` | `reservations` | Every minute | 30 s | 5 | `reservation_id` |
+| `Reservations::ExtendJob` | `reservations` | On a bank transfer | 10 s | 3 | `order_id:attempt` |
+| `Stock::RecountJob` | `stock_slow` | Every night | 20 min | 1 | `warehouse_id:date` |
+| `Storefront::RefreshStockJob` | `storefront` | Every 30 seconds | 5 s | 0 | `product_id` |
+
+The audit log is wider than any margin. It scrolls inside its block, and the first column stays in place.
+
+| Event | Written by | `order_id` | `product_id` | `quantity` | `expires_at` | `released_at` | `released_by` | `request_id` | `idempotency_key` | Kept for |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `reservation.created` | `Checkout::Create` | set | set | set | set | empty | empty | `req_checkout_create` | `cart_token:product_id` | 90 days |
+| `reservation.extended` | `Checkout::Retry` | set | set | unchanged | moved forward | empty | empty | `req_checkout_retry` | `cart_token:attempt` | 90 days |
+| `reservation.released` | `Reservations::ExpireJob` | set | set | set | unchanged | set | `expiry` | `job_reservations_expire` | `reservation_id` | 90 days |
+| `reservation.consumed` | `Order#pay!` | set | set | set | unchanged | set | `payment` | `req_payment_capture` | `payment_intent_id` | 7 years |
+
 #### When a reservation ends
 
 - **The payment is captured.** The reservation becomes a sale: the stock record loses the units for good, and the reservation is released with `payment`.
@@ -116,6 +148,7 @@ The full exchange involves more parties than the authorization does, because the
 
 ```mermaid
 sequenceDiagram
+  accTitle: From the order to the receipt
   autonumber
   actor Customer
   participant Storefront

@@ -171,6 +171,11 @@ test('theme switching persists and rerenders Mermaid', async () => {
   await page.locator('starlight-theme-select select').first().selectOption('dark');
   await page.waitForSelector('pre.mermaid svg');
   await page.waitForSelector('.mermaid-viewport');
+  // The switch of the theme draws the diagram again. Wait for a picture that has its colours.
+  await page.waitForFunction(() => {
+    const shape = document.querySelector('pre.mermaid .node.service :is(rect, polygon, circle, ellipse, path)');
+    return shape && /\d/.test(getComputedStyle(shape).fill);
+  });
   const nodeContrast = await page.locator('pre.mermaid .node.service').first().evaluate((node) => {
     const shape = node.querySelector('rect, polygon, circle, ellipse, path');
     const label = node.querySelector('.nodeLabel, .label, text');
@@ -325,6 +330,80 @@ test('desktop sizes every text from the note text and keeps the column readable'
   const current = page.locator('#starlight__sidebar a[aria-current="page"]');
   assert.equal(await current.getAttribute('title'), 'Proof of payment investigation');
   assert.equal(await current.locator('span').evaluate((label) => getComputedStyle(label).webkitLineClamp), '2');
+  await context.close();
+});
+
+test('a wide table or diagram grows into the margins, and scrolls only past them', async () => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/guide/order-lifecycle/`);
+  await page.locator('.sl-markdown-content > table[data-scroll]').waitFor();
+  await page.locator('.mermaid-block[data-wide]').first().waitFor();
+
+  const measure = () => page.evaluate(() => {
+    const column = document.querySelector('.sl-markdown-content').getBoundingClientRect();
+    const pane = document.querySelector('.main-pane').getBoundingClientRect();
+    const describe = (element) => {
+      const box = element.getBoundingClientRect();
+      return {
+        wide: 'wide' in element.dataset,
+        scroll: 'scroll' in element.dataset,
+        width: Math.round(box.width),
+        center: box.left + (box.width / 2),
+        inPane: box.left >= pane.left && box.right <= pane.right,
+        overflows: element.scrollWidth > element.clientWidth,
+      };
+    };
+    return {
+      column: Math.round(column.width),
+      columnCenter: column.left + (column.width / 2),
+      pageScrolls: document.documentElement.scrollWidth > window.innerWidth,
+      tables: [...document.querySelectorAll('.sl-markdown-content > table')].map(describe),
+      diagrams: [...document.querySelectorAll('.sl-markdown-content > .mermaid-block')].map(describe),
+      sticky: getComputedStyle(document.querySelector('table[data-scroll] td')).position,
+      tableText: parseFloat(getComputedStyle(document.querySelector('.sl-markdown-content td')).fontSize),
+      text: parseFloat(getComputedStyle(document.querySelector('.sl-markdown-content p')).fontSize),
+    };
+  });
+
+  // The header of a diagram shows its title, from the front matter or from `accTitle`, and the
+  // picture does not repeat it. A diagram without a title is just a diagram.
+  const captions = await page.locator('.mermaid-caption').allTextContents();
+  assert.deepEqual(captions.slice(0, 3), ['The four steps of an order', 'Diagram', 'From the order to the receipt']);
+  assert.equal(await page.locator('.mermaid-block').first().locator('svg text, svg foreignObject').filter({ hasText: 'The four steps' }).count(), 0);
+
+  const desktop = await measure();
+  const [fits, wrapped, inMargins, scrolls] = desktop.tables;
+  assert.equal(desktop.tableText, desktop.text * 0.875);
+  // Prose wraps, so these two stay in the column.
+  for (const table of [fits, wrapped]) {
+    assert.deepEqual([table.wide, table.width, table.overflows], [false, desktop.column, false], JSON.stringify(table));
+  }
+  // Code does not wrap. The table takes the margins, shows everything, and stays centred.
+  assert.ok(inMargins.wide && !inMargins.scroll && !inMargins.overflows, JSON.stringify(inMargins));
+  assert.ok(inMargins.width > desktop.column && inMargins.inPane, JSON.stringify(inMargins));
+  assert.ok(Math.abs(inMargins.center - desktop.columnCenter) <= 1, JSON.stringify(inMargins));
+  // The widest table takes all the margins and scrolls inside itself, with the first column fixed.
+  assert.ok(scrolls.scroll && scrolls.overflows && scrolls.inPane, JSON.stringify(scrolls));
+  assert.ok(scrolls.width > inMargins.width);
+  assert.equal(desktop.sticky, 'sticky');
+  assert.equal(await page.locator('table[data-scroll]').getAttribute('tabindex'), '0');
+  // Small diagrams stay in the column, large ones step out of it. The page never scrolls sideways.
+  assert.ok(desktop.diagrams.some((diagram) => !diagram.wide && diagram.width === desktop.column));
+  for (const diagram of desktop.diagrams.filter((diagram) => diagram.wide)) {
+    assert.ok(diagram.width > desktop.column && diagram.inPane, JSON.stringify(diagram));
+    assert.ok(Math.abs(diagram.center - desktop.columnCenter) <= 1, JSON.stringify(diagram));
+  }
+  assert.equal(desktop.pageScrolls, false);
+
+  // A phone has no margins: every block keeps the width of the column, and wide tables scroll.
+  await page.setViewportSize({ width: 390, height: 800 });
+  await page.waitForFunction(() => document.querySelectorAll('.sl-markdown-content > table[data-scroll]').length > 1);
+  const phone = await measure();
+  for (const block of [...phone.tables, ...phone.diagrams]) {
+    assert.equal(block.width, phone.column, JSON.stringify(block));
+  }
+  assert.equal(phone.pageScrolls, false);
   await context.close();
 });
 

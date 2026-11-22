@@ -1,226 +1,233 @@
-# Notes — дизайн-гайд
+# Notes — design guide
 
 Nov 22, 2026 · @Alex
 
-## Задумка
+## The idea
 
-Notes — инструмент для чтения технических заметок, поэтому главным на экране всегда остаётся текст заметки. Навигация и кнопки помогают найти и прочитать заметку и не соперничают с ней.
+Notes is a tool for reading technical notes, so the text of the note is always the main thing on the screen. Navigation and buttons help the reader find and read a note, and they do not compete with it.
 
-Четыре принципа, из которых следует всё остальное:
+Four principles, and everything else follows from them:
 
-- **Тихий интерфейс.** Всё, что не является текстом заметки, мельче, светлее и спокойнее его.
-- **Одна шкала.** Размеры шрифтов и отступы берутся из общей шкалы и выражаются друг через друга.
-- **Структура через отступы и выравнивание.** Рамки, линии и цвет используются, только когда отступа не хватает.
-- **Плотно там, где ищут, свободно там, где читают.** Дерево сжато, текст заметки дышит.
+- **A quiet interface.** Everything that is not the text of the note is smaller, lighter, and calmer than the text.
+- **One scale.** Font sizes and spaces come from one scale and are expressed through each other.
+- **Structure through space and alignment.** Frames, lines, and colour are used only when space is not enough.
+- **Dense where people search, loose where people read.** The tree is compact, and the text of the note has air.
 
-Содержимое собирается из markdown автоматически. Значит, стили должны одинаково хорошо работать на любой заметке, без ручной подгонки под конкретную страницу.
+The content is built from Markdown automatically. So the styles must work equally well on any note, without manual tuning for a particular page.
 
-Гайд описывает соотношения, а не конкретные значения. Точка отсчёта везде одна: размер основного текста заметки. Как это выглядит вживую, показывают [макеты](https://claude.ai/artifact/5QAZxPqaHcsu7F693QLq3P#page-type).
+The guide describes ratios, not exact values. The reference point is the same everywhere: the size of the body text of the note. The [mockups](https://claude.ai/artifact/5QAZxPqaHcsu7F693QLq3P#page-type) show how this looks in practice.
 
-## Три уровня внимания
+## Three levels of attention
 
-Каждый элемент страницы относится к одному из трёх уровней, и уровень определяет его размер, контраст и плотность.
+Every element of the page belongs to one of three levels, and the level sets its size, contrast, and density.
 
-| Уровень | Что входит | Как выглядит |
+| Level | What it includes | How it looks |
 | --- | --- | --- |
-| 1. Текст заметки | Заголовок, абзацы, код, диаграммы | Самый крупный и контрастный, самые большие отступы |
-| 2. Навигация | Дерево заметок, «On this page» | На ступень мельче текста, спокойнее по цвету, плотнее |
-| 3. Управление | Поиск, кнопки, сортировка, тема | Самое мелкое и тихое на странице |
+| 1. Text of the note | Title, paragraphs, code, diagrams | The largest and the most contrasting, with the largest spaces |
+| 2. Navigation | The notes tree, "On this page" | One step smaller than the text, calmer in colour, denser |
+| 3. Controls | Search, buttons, sorting, theme | The smallest and the quietest on the page |
 
-Элемент нижнего уровня никогда не бывает крупнее, жирнее или ярче элемента верхнего. Исключение одно: текущая заметка в дереве, потому что она отвечает на вопрос «где я».
+An element of a lower level is never larger, bolder, or brighter than an element of a higher level. There is one exception: the current note in the tree, because it answers the question "where am I".
 
-Если кнопка или пункт меню спорит с заголовком заметки, ошибка в кнопке, а не в заголовке.
+If a button or a menu item competes with the title of the note, the mistake is in the button, not in the title.
 
-## Типографика
+## Typography
 
-Весь текст на странице строится от одного размера: размера основного текста заметки. Остальные размеры выражаются ступенями относительно него.
+All text on the page is built from one size: the size of the body text of the note. The other sizes are steps relative to it.
 
-Вверх от основного текста ступень шкалы — примерно четверть: меньшая разница между заголовками на глаз не считывается. Вниз шаги короче, около одной восьмой, потому что мелкий текст быстро теряет читаемость.
+Above the body text a step of the scale is about a quarter: the eye does not read a smaller difference between headings. Below it the steps are shorter, about one eighth, because small text loses legibility quickly.
 
-| Роль | Размер относительно основного текста | Насыщенность | Высота строки относительно размера шрифта |
+| Role | Size relative to the body text | Weight | Line height relative to the font size |
 | --- | --- | --- | --- |
-| Основной текст заметки | Точка отсчёта | Обычная | Свободная: примерно в 1,7 раза больше |
-| Заголовок страницы | Примерно вдвое крупнее | Жирная | Плотная: примерно в 1,2 раза больше |
-| Заголовок раздела | Примерно в полтора раза крупнее | Полужирная | Примерно в 1,25 раза больше |
-| Подзаголовок | На одну ступень крупнее | Полужирная | Примерно в 1,3 раза больше |
-| Навигация: дерево, содержание | На одну ступень мельче | Обычная; полужирная у папок и текущей заметки | Примерно в 1,4 раза больше |
-| Кнопки, подписи, служебный текст | На две ступени мельче | Средняя | Одна строка |
-| Код внутри строки | Чуть мельче окружающего текста | Обычная | Как у окружающего текста |
+| Body text of the note | The reference point | Regular | Loose: about 1.7 times larger |
+| Page title | About twice as large | Bold | Tight: about 1.2 times larger |
+| Section heading | About one and a half times as large | Semibold | About 1.25 times larger |
+| Subheading | One step larger | Semibold | About 1.3 times larger |
+| Navigation: tree, contents | One step smaller | Regular; semibold for folders and the current note | About 1.4 times larger |
+| Buttons, captions, service text | Two steps smaller | Medium | One line |
+| Inline code | Slightly smaller than the text around it | Regular | The same as the text around it |
 
-Правила, которые держат шкалу:
+The rules that hold the scale together:
 
-- **Длина строки.** В строке основного текста 65–80 знаков. Колонка не растягивается вместе с окном.
-- **Чем крупнее, тем плотнее.** У крупных заголовков межстрочный интервал и расстояние между буквами меньше, у мелкого текста больше.
-- **Три насыщенности, не больше.** Жирность показывает структуру: заголовки, папки, текущая заметка. Отдельные слова в интерфейсе она не выделяет.
-- **Два семейства.** Гротеск для всего, моноширинный только для кода, путей и идентификаторов. Обычные слова и описания моноширинным не набираются.
-- **Нижняя граница.** Служебный текст не мельче примерно трёх четвертей основного. Дальше он перестаёт читаться, особенно с цифрами и слэшами.
-- **Заголовки соседних уровней** различаются и размером, и насыщенностью, а не чем-то одним.
+- **Line length.** A line of body text has 65–80 characters. The column does not stretch with the window.
+- **The larger, the tighter.** Large headings have a smaller line height and letter spacing, and small text has larger ones.
+- **Three weights, no more.** Weight shows structure: headings, folders, the current note. It does not emphasise separate words in the interface.
+- **Two families.** A sans serif for everything, and a monospace only for code, paths, and identifiers. Ordinary words and descriptions are not set in monospace.
+- **The lower limit.** Service text is not smaller than about three quarters of the body text. Below that it stops being readable, especially with digits and slashes.
+- **Headings of adjacent levels** differ in both size and weight, not in one of them.
 
-## Отступы и ритм
+## Spacing and rhythm
 
-Все отступы берутся из одной шкалы, где каждый шаг в полтора-два раза больше предыдущего. Промежуточных значений нет.
+All spaces come from one scale, where each step is one and a half to two times larger than the previous one. There are no values in between.
 
-Единица шкалы — половина размера основного текста. Ниже она обозначена как «шаг».
+The unit of the scale is half the size of the body text. Below it is called a "step".
 
-| Что разделяем | Отступ |
+| What is separated | Space |
 | --- | --- |
-| Части одного элемента: иконка и подпись | 1 шаг |
-| Соседние строки списка или дерева | Почти вплотную: воздух даёт сама высота строки |
-| Группы внутри панели | 2 шага |
-| Абзацы | 2–3 шага, около трёх четвертей высоты строки |
-| Блок внутри текста: код, диаграмма, выноска | 4 шага сверху и снизу |
-| Заголовок страницы и первый абзац | 6–8 шагов |
-| Разделы | 10–12 шагов |
+| Parts of one element: an icon and its label | 1 step |
+| Adjacent rows of a list or the tree | Almost none: the line height itself gives the air |
+| Groups inside a panel | 2 steps |
+| Paragraphs | 2–3 steps, about three quarters of the line height |
+| A block inside the text: code, diagram, table, callout | 4 steps above and below |
+| The page title and the first paragraph | 6–8 steps |
+| Sections | 10–12 steps |
 
-Правила:
+Rules:
 
-- **Близость.** Связанные элементы стоят минимум вдвое ближе друг к другу, чем к несвязанным. Это главный инструмент структуры.
-- **Изнутри наружу.** Отступ внутри элемента меньше отступа между элементами, тот меньше отступа между группами, тот меньше отступа между разделами.
-- **Заголовок принадлежит тексту под ним.** Над заголовком раздела отступ в три-четыре раза больше, чем под ним.
-- **Поля колонки текста** по бокам не меньше трёх-четырёх высот строки. Сверху поле меньше, чем по бокам.
-- **Поля панелей** примерно вдвое меньше полей колонки текста.
-- **Линия вместо отступа** используется, когда отступа недостаточно, например между шапкой раздела и его содержимым. С обеих сторон от линии отступ одинаковый.
-- **Выравнивание.** Левые края текста внутри одной зоны совпадают. Иконки и значки раскрытия в этот край не входят, они висят слева от него.
+- **Proximity.** Related elements stand at least twice as close to each other as to unrelated ones. This is the main tool of structure.
+- **From the inside out.** The space inside an element is smaller than the space between elements, which is smaller than the space between groups, which is smaller than the space between sections.
+- **A heading belongs to the text below it.** The space above a section heading is three to four times larger than the space below it.
+- **The margins of the text column** on the sides are at least three to four line heights. The top margin is smaller than the side margins.
+- **The margins of the panels** are about half the margins of the text column.
+- **A line instead of space** is used when space is not enough, for example between the header of a section and its content. The space is the same on both sides of the line.
+- **Alignment.** The left edges of the text inside one zone coincide. Icons and disclosure marks are not part of this edge: they hang to the left of it.
 
-## Пропорции страницы
+## Page proportions
 
-Страница состоит из трёх зон, и главная из них — колонка текста, ширина которой задана длиной строки, а не шириной окна.
+The page has three zones, and the main one is the text column, whose width is set by the line length and not by the width of the window.
 
-- **Колонка текста** стоит по центру пространства между панелями. Лишняя ширина окна уходит в поля вокруг неё, а не в длину строк.
-- **Дерево** занимает примерно треть ширины колонки текста.
-- **Содержание страницы** немного уже дерева: в нём короткие строки и меньше уровней.
-- **Две панели вместе** уже колонки текста. Если это не так, навигация начинает доминировать.
-- **Шапка** тонкая: её высота около двух высот строки основного текста.
-- **Одна линия сверху.** Первая строка дерева, первая строка заметки и заголовок содержания начинаются на одной высоте.
+- **The text column** stands in the centre of the space between the panels. Spare width of the window goes into the margins around it, not into the length of the lines.
+- **The tree** takes about a third of the width of the text column.
+- **The page contents** are slightly narrower than the tree: they have short lines and fewer levels.
+- **The two panels together** are narrower than the text column. If they are not, the navigation starts to dominate.
+- **The header** is thin: its height is about two line heights of the body text.
+- **One line at the top.** The first row of the tree, the first line of the note, and the heading of the contents start at the same height.
 
-Панели можно сузить, расширить или скрыть. Пока колонке текста хватает места, её ширина не меняется, меняются только поля.
+The panels can be narrowed, widened, or hidden. While the text column has enough room, its width does not change, and only the margins change.
 
-На узком экране панели становятся выдвижными слоями поверх текста. Колонка занимает всю ширину, а её боковые поля не меньше одной высоты строки.
+On a narrow screen the panels become drawers over the text. The column takes the whole width, and its side margins are at least one line height.
 
-## Дерево навигации
+## The navigation tree
 
-Дерево просматривают глазами, а не читают, поэтому оно плотнее и мельче текста заметки. При этом каждая строка остаётся удобной целью для клика.
+People scan the tree and do not read it, so it is denser and smaller than the text of the note. Each row still stays a comfortable target for a click.
 
-- **Высота строки** чуть больше двух размеров её шрифта. Ниже строки сливаются, выше дерево перестаёт помещаться на экран.
-- **Папка и файл** различаются насыщенностью и значком раскрытия, а не размером шрифта.
-- **Вложенность** показывают отступ и тонкая направляющая линия. Каждый уровень сдвигается на один и тот же шаг, равный ширине значка раскрытия с его зазором.
-- **Длинное название заметки** занимает максимум две строки, дальше обрезается, а полное видно в подсказке. В одну строку обрезать нельзя: названия в папке часто начинаются одинаково и различаются концом.
-- **Имя папки** всегда в одну строку.
-- **Текущая заметка** выделена светлой подложкой акцентного цвета и акцентным текстом. Сплошная яркая заливка слишком тяжёлая для пункта списка.
-- **Раскрытая папка** отделена от следующей дополнительным отступом, чтобы её содержимое читалось как группа.
-- **Сортировка** — тихая кнопка над деревом, на которой написан текущий порядок. Она же служит заголовком списка.
-- **Над деревом нет подписи**, которая повторяет название сайта или папки.
+- **The row height** is slightly more than two sizes of its font. Below that the rows merge, and above that the tree stops fitting on the screen.
+- **A folder and a file** differ in weight and in the disclosure mark, not in font size.
+- **Nesting** is shown by an indent and a thin guide line. Each level shifts by the same step, equal to the width of the disclosure mark with its gap.
+- **A long note name** takes two lines at most, then it is cut, and the tooltip shows the whole name. It must not be cut to one line: names in a folder often start the same way and differ at the end.
+- **A folder name** always takes one line.
+- **The current note** has a light background of the accent colour and accent text. A solid bright fill is too heavy for a list item.
+- **An open folder** is separated from the next one by an extra space, so that its content reads as a group.
+- **Sorting** is a quiet button above the tree that shows the current order. It also serves as the heading of the list.
+- **There is no label above the tree** that repeats the name of the site or of the folder.
 
-Дерево по умолчанию закреплено: для документации это основная навигация. Скрытое дерево — выбор читателя, а не стартовое состояние.
+The tree is pinned by default: for documentation it is the main navigation. A hidden tree is the choice of the reader, not the starting state.
 
-## Шапка и элементы управления
+## The header and controls
 
-Шапка тонкая, всегда на экране. В ней то, что относится ко всему сайту, и действия с открытой заметкой: они должны быть под рукой на любой глубине прокрутки. Остальное управление живёт рядом с тем, чем оно управляет.
+The header is thin and always on the screen. It holds what belongs to the whole site and the actions for the open note: they must be at hand at any scroll depth. Every other control lives next to the thing it controls.
 
-| Чем управляет | Где стоит |
+| What it controls | Where it stands |
 | --- | --- |
-| Сайтом целиком: поиск, тема, показ панелей | В шапке |
-| Деревом: сортировка | Над деревом |
-| Заметкой: «Copy page» и его меню | В шапке, в правой группе |
-| Блоком: масштаб диаграммы | В шапке самого блока |
+| The whole site: search, theme, visibility of the panels | In the header |
+| The tree: sorting | Above the tree |
+| The note: "Copy page" and its menu | In the header, in the right group |
+| A block: the zoom of a diagram | In the header of the block itself |
 
-Правила:
+Rules:
 
-- **Кнопки панелей стоят с той стороны, где панель.** Кнопка дерева первая слева, кнопка содержания последняя справа. Они не уезжают при прокрутке.
-- **Одна высота в пределах зоны.** Все кнопки и поля в шапке одной высоты, все кнопки в заметке одной высоты.
-- **Высота кнопки** примерно в два с половиной раза больше размера её текста. Кнопка-иконка квадратная, со стороной, равной этой высоте.
-- **Иконка** чуть выше прописной буквы соседнего текста и той же толщины линии, что у остальных иконок.
-- **Тихий вид по умолчанию.** Служебные кнопки без заливки или с тонкой рамкой. Акцентной заливки у них нет.
-- **Поиск** — самый широкий элемент шапки, примерно в половину колонки текста.
-- **Один вход у каждой функции.** Одно и то же действие не дублируется в двух местах.
-- **Текущее значение видно без клика.** Переключатель с двумя-тремя вариантами показывает выбранный вариант на самой кнопке.
+- **The panel buttons stand on the side of their panel.** The tree button is the first on the left, and the contents button is the last on the right. They do not move away on scroll.
+- **One height inside a zone.** All buttons and fields in the header have one height, and all buttons in the note have one height.
+- **The height of a button** is about two and a half times the size of its text. An icon button is a square with a side equal to this height.
+- **An icon** is slightly taller than a capital letter of the adjacent text and has the same stroke width as the other icons.
+- **A quiet look by default.** Service buttons have no fill or have a thin border. They have no accent fill.
+- **The search** is the widest element of the header, about half the text column.
+- **One entry point for each function.** The same action is not repeated in two places.
+- **The current value is visible without a click.** A switch with two or three options shows the selected option on the button itself.
 
-## Всплывающие панели и меню
+## Floating panels and menus
 
-Всё всплывающее привязано к элементу, который его открыл, и занимает минимум места, чтобы закрывать как можно меньше текста.
+Everything that floats is attached to the element that opened it and takes the minimum of room, so that it covers as little text as possible.
 
-- **Привязка.** Меню выравнивается по краю своей кнопки и открывается сразу под ней.
-- **Ширина.** Меню не шире половины колонки текста.
-- **Пункт меню** состоит из названия и пояснения. Название как текст навигации, полужирное; пояснение на ступень мельче и спокойнее по цвету.
-- **Поверхность.** Фон страницы, тонкая рамка, мягкая тень. Скругление примерно в полтора раза больше, чем у кнопок.
-- **Закрытие.** Клик вне слоя и клавиша Esc закрывают его.
-- **Отдельное окно настроек** оправдано, когда настроек три и больше. Одна-две настройки живут прямо там, где действуют.
+- **Anchoring.** A menu aligns with the edge of its button and opens directly below it.
+- **Width.** A menu is not wider than half the text column.
+- **A menu item** has a name and an explanation. The name is set as navigation text, semibold; the explanation is one step smaller and calmer in colour.
+- **Surface.** The page background, a thin border, a soft shadow. The corner radius is about one and a half times larger than that of buttons.
+- **Closing.** A click outside the layer and the Esc key close it.
+- **A separate settings window** is justified when there are three settings or more. One or two settings live right where they act.
 
-Плавающее дерево подчиняется тем же правилам и ещё трём:
+The floating tree follows the same rules and three more:
 
-1. Оно появляется при наведении на кнопку дерева с короткой задержкой и исчезает с задержкой примерно вдвое длиннее. Без задержек панель выскакивает при каждом движении мыши.
-2. Клик по кнопке закрепляет дерево в раскладке или открепляет его.
-3. На сенсорных экранах наведения нет, поэтому работает только клик.
+1. It appears when the pointer is on the tree button, after a short delay, and disappears after a delay about twice as long. Without the delays the panel jumps out on every move of the mouse.
+2. A click on the button pins the tree into the layout or unpins it.
+3. Touch screens have no hover, so only the click works there.
 
-## Цвет
+## Colour
 
-Интерфейс нейтральный, а акцентный цвет один и означает только две вещи: «это ссылка» и «это выбрано».
+The interface is neutral, and there is one accent colour, which means only two things: "this is a link" and "this is selected".
 
-| Роль | Сколько тонов | Где применяется |
+| Role | How many tones | Where it is used |
 | --- | --- | --- |
-| Текст | Три: основной, обычный, приглушённый | Заголовки; абзацы и навигация; служебный текст и подписи |
-| Поверхности | Три: страница, панель, слой | Фон заметки; фон дерева, едва отличимый от страницы; меню и плавающие панели с тенью |
-| Линии | Один | Самый светлый тон, который ещё виден |
-| Акцент | Один цвет и его светлая подложка | Ссылки, текущий пункт, клавиатурный фокус |
+| Text | Three: ink, body, muted | Headings; paragraphs and navigation; service text and captions |
+| Surfaces | Three: page, panel, layer | The background of the note; the background of the tree, barely different from the page; menus and floating panels with a shadow |
+| Lines | One | The lightest tone that is still visible |
+| Accent | One colour and its light background | Links, the current item, keyboard focus |
 
-Правила:
+Rules:
 
-- **Акцент не украшает.** Он не используется для заголовков, фона больших областей и служебных кнопок.
-- **Контраст.** Основной и обычный текст контрастны к фону. Приглушённый текст остаётся читаемым: не ниже стандартного порога доступности 4,5 к 1.
-- **Разница между поверхностями** минимальна. Зоны разделяет в первую очередь отступ, тон только поддерживает.
-- **Тёмная тема** сохраняет те же роли и те же соотношения контраста. Это отдельный подбор тонов, а не инверсия светлой.
-- **Диаграммы** рисуются в палитре сайта: нейтральные линии, белые или слегка подкрашенные акцентом блоки. Палитра библиотеки по умолчанию выглядит чужой.
+- **The accent does not decorate.** It is not used for headings, for the background of large areas, or for service buttons.
+- **Contrast.** Ink and body text contrast with the background. Muted text stays readable: not below the standard accessibility threshold of 4.5 to 1.
+- **The difference between surfaces** is minimal. Space separates the zones first of all, and tone only supports it.
+- **The dark theme** keeps the same roles and the same contrast ratios. It is a separate selection of tones, not an inversion of the light theme.
+- **Diagrams** are drawn in the palette of the site: neutral lines, and boxes that are white or slightly tinted with the accent. The default palette of the library looks foreign.
 
-## Блоки внутри текста
+## Blocks inside the text
 
-Код, диаграммы и выноски — часть текста: они стоят в колонке текста и подчиняются её ритму.
+Code, diagrams, tables, and callouts are part of the text: they stand in the text column and follow its rhythm.
 
-- **Ширина.** Блок не шире колонки текста. Широкое содержимое прокручивается внутри блока, страница вбок не едет.
-- **Код в строке** набран моноширинным чуть мельче текста, на едва заметной подложке. Он не увеличивает высоту строки.
-- **Диаграмма** стоит в рамке с собственной тонкой шапкой: слева подпись, справа управление масштабом. Кнопки там той же высоты, что и остальные кнопки в заметке.
-- **Выноска** — светлая подложка, значок и полужирный заголовок. Она не ярче и не контрастнее окружающего текста.
-- **Списки.** Расстояние между пунктами вдвое меньше, чем между абзацами.
-- **Раздел** читается как единица: его заголовок отделён сверху линией и большим отступом.
-- **Скругления** берутся из двух значений. Малое для кнопок и подложек кода; большое, в полтора-два раза больше, для блоков, меню и плавающих панелей.
+- **Width.** A block is not wider than the text column. Wide content scrolls inside the block, and the page does not move sideways.
+- **The exception: tables and diagrams.** Narrowing them costs more than narrowing text: a table loses its rows, and a diagram loses readable labels. So they take their room in three steps:
+  1. First the block tries to fit in the column. A table is set one step smaller than the text, its cells stand closer, ordinary text in a cell wraps, and code and identifiers do not.
+  2. If the block does not fit, it grows into the margins of the column and stays aligned with its centre. Its limit is the space between the panels; if a panel is unpinned, there is more space.
+  3. If the margins are not enough either, a table scrolls inside the block, and its first column stays in place. A diagram shrinks to the available width.
+- **Into the margins only when needed.** A block that fits in the column stands in the column. A block in the margins is not wider than its content. Code, callouts, and quotes do not grow into the margins.
+- **On a narrow screen and in print** there are no margins, so only the first and the third steps remain.
+- **Inline code** is set in monospace slightly smaller than the text, on a barely visible background. It does not increase the line height.
+- **A table** has no frame and no fill: a thin line separates the rows, and the column headings are set as captions, small and muted. The first and the last cells stand on the edges of the column, as the lines of text do.
+- **A diagram** stands in a frame with its own thin header: the caption on the left, the zoom controls on the right. The buttons there have the same height as the other buttons in the note.
+- **A callout** is a light background, an icon, and a semibold title. It is not brighter or more contrasting than the text around it.
+- **Lists.** The space between items is half the space between paragraphs.
+- **A section** reads as a unit: a line and a large space separate its heading from the text above.
+- **Corner radii** come from two values. The small one is for buttons and code backgrounds; the large one, one and a half to two times larger, is for blocks, menus, and floating panels.
 
-## Состояния и поведение
+## States and behaviour
 
-У каждого интерактивного элемента состояния различимы с первого взгляда и выглядят одинаково во всех зонах.
+The states of every interactive element are distinguishable at a glance and look the same in all zones.
 
-| Состояние | Как показано |
+| State | How it is shown |
 | --- | --- |
-| Покой | Без подложки |
-| Наведение | Едва заметная нейтральная подложка |
-| Открыто или нажато | Нейтральная подложка чуть плотнее, чем при наведении |
-| Выбрано | Светлая акцентная подложка и акцентный текст |
-| Клавиатурный фокус | Контурное кольцо акцентного цвета, видно на любом фоне |
+| Rest | No background |
+| Hover | A barely visible neutral background |
+| Open or pressed | A neutral background slightly denser than on hover |
+| Selected | A light accent background and accent text |
+| Keyboard focus | An outline ring of the accent colour, visible on any background |
 
-Поведение:
+Behaviour:
 
-- **Ширина панелей** меняется перетаскиванием границы. Граница выглядит как обычная тонкая линия, а о возможности тянуть говорит курсор.
-- **Пределы ширины.** Панель нельзя сузить до нечитаемой или расширить так, чтобы она стала шире колонки текста.
-- **Память.** Закрепление панелей, их ширина и порядок сортировки сохраняются при переходе между заметками.
-- **Движение.** Анимируется только появление и исчезновение слоёв, коротко. Текст заметки при этом не сдвигается.
-- **Клавиатура.** Всё, что открывается мышью, открывается и с клавиатуры.
+- **The width of the panels** changes when the reader drags the border. The border looks like an ordinary thin line, and the cursor tells that it can be dragged.
+- **Width limits.** A panel cannot be narrowed until it is unreadable, or widened until it is wider than the text column.
+- **Memory.** The pinning of the panels, their width, and the sort order persist between notes.
+- **Motion.** Only the appearance and disappearance of layers is animated, briefly. The text of the note does not shift.
+- **Keyboard.** Everything that opens with the mouse also opens from the keyboard.
 
-## Как проверять решения
+## How to check decisions
 
-Любое новое решение проходит пять вопросов. Если ответ хотя бы на один «нет», решение дорабатывается.
+Every new decision goes through five questions. If the answer to at least one is "no", the decision needs more work.
 
-1. Если прищуриться, текст заметки остаётся самым заметным на экране?
-2. Каждый размер шрифта и каждый отступ взят из шкалы, а не подобран на глаз?
-3. Связанные элементы стоят минимум вдвое ближе, чем несвязанные?
-4. Решение выдерживает крайние случаи: самое длинное название, самую длинную заметку, пустую папку, узкое окно?
-5. Если убрать этот элемент, линию или цвет, что-то потеряется? Если нет, его убирают.
+1. If you squint, does the text of the note stay the most noticeable thing on the screen?
+2. Is every font size and every space taken from the scale, and not chosen by eye?
+3. Do related elements stand at least twice as close as unrelated ones?
+4. Does the decision survive the extreme cases: the longest name, the longest note, an empty folder, a narrow window?
+5. If this element, line, or colour is removed, is anything lost? If not, it is removed.
 
-Чего избегать:
+What to avoid:
 
-- Строки текста на всю ширину окна.
-- Навигация того же размера и веса, что текст заметки.
-- Сплошные акцентные заливки на пунктах списка и служебных кнопках.
-- Рамки вокруг всего подряд вместо отступов.
-- Моноширинный шрифт для обычных слов.
-- Подписи, которые повторяют очевидное или название сайта.
-- Отдельное окно ради одной настройки.
-- Управление, которое уезжает при прокрутке.
-- Два почти одинаковых размера шрифта или отступа рядом.
+- Lines of text across the whole width of the window.
+- Navigation of the same size and weight as the text of the note.
+- Solid accent fills on list items and service buttons.
+- Frames around everything instead of space.
+- A monospace font for ordinary words.
+- Labels that repeat the obvious or the name of the site.
+- A separate window for a single setting.
+- Controls that move away on scroll.
+- Two almost equal font sizes or spaces next to each other.

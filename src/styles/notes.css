@@ -839,6 +839,85 @@ h1#_top {
   box-shadow: calc(var(--notes-space-1) * -1) 0 0 var(--notes-color-accent-soft);
 }
 
+/* Tables and wide blocks */
+
+/* The space between the panels is the measure for a block that the column cannot hold. */
+.main-pane {
+  container-type: inline-size;
+}
+
+.sl-markdown-content {
+  --notes-wide: calc(100cqi - 2 * var(--sl-content-pad-x));
+}
+
+/* A table is denser than the text: one step smaller, with cells half as far apart. Prose in a
+   cell wraps, and code stays on one line, so a table first tries to fit in the column. */
+.sl-markdown-content table:not(:where(.not-content *)) {
+  box-sizing: border-box;
+  max-width: 100%;
+  font-size: var(--notes-text-nav);
+  line-height: 1.5;
+}
+
+.sl-markdown-content :is(th, td):not(:where(.not-content *)) {
+  padding: var(--notes-space-1);
+  border-block-end-color: var(--notes-color-line);
+}
+
+/* The first and the last cell stand on the edges of the column, as the lines of text do. */
+.sl-markdown-content :is(th, td):first-child:not(:where(.not-content *)) {
+  padding-inline-start: 0;
+}
+
+.sl-markdown-content :is(th, td):last-child:not(:where(.not-content *)) {
+  padding-inline-end: 0;
+}
+
+.sl-markdown-content th:not(:where(.not-content *)) {
+  color: var(--notes-color-muted);
+  font-size: var(--notes-text-control);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sl-markdown-content :is(th, td):not(:where(.not-content *)) code {
+  white-space: nowrap;
+}
+
+/* A block that does not fit in the column grows into the margins and stays centred on the
+   column. The script in `Head.astro` marks such blocks, because CSS cannot ask a table whether
+   its narrowest form fits. */
+.sl-markdown-content > :is(table, .mermaid-block)[data-wide]:not(:fullscreen) {
+  max-width: var(--notes-wide);
+  margin-inline-start: 50%;
+  translate: -50%;
+  translate: round(-50%, 1px);
+}
+
+.sl-markdown-content > table[data-wide] {
+  width: max-content;
+}
+
+.sl-markdown-content > .mermaid-block[data-wide]:not(:fullscreen) {
+  width: var(--notes-natural-width);
+}
+
+/* A table wider than the margins allow scrolls inside itself. The first column stays in place,
+   so a row keeps its name at any scroll position. */
+.sl-markdown-content > table[data-scroll] {
+  scrollbar-width: thin;
+}
+
+.sl-markdown-content > table[data-scroll] :is(th, td):first-child {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 1;
+  background: var(--notes-color-page);
+  box-shadow: 1px 0 0 var(--notes-color-line);
+}
+
 /* Diagrams: a frame with a thin header, the caption on the left and the zoom on the right */
 
 .mermaid-block {
@@ -1051,6 +1130,14 @@ pre.mermaid svg text.sequenceNumber {
 
   .mermaid-viewport {
     overflow: visible;
+  }
+
+  /* Paper has no margins to grow into. */
+  .sl-markdown-content > :is(table, .mermaid-block)[data-wide] {
+    width: auto;
+    max-width: 100%;
+    margin-inline-start: 0;
+    translate: none;
   }
 }
 
