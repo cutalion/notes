@@ -6,7 +6,7 @@
 
 The site looks like Astro with Starlight, but Astro does not render the notes.
 
-1. **The shell.** Astro builds one template page from `src/shell/` with markers in place of the title, the body, the sidebar, and the contents. This runs on the first start and after a change in `src/` or in the dependencies. It takes about ten seconds.
+1. **The shell.** Astro builds one template page from `src/shell/` with markers in place of the title, the body, the sidebar, and the contents. This runs on the first start and after a change in `src/`, in `public/`, or in the dependencies. It takes about ten seconds.
 2. **The notes.** `scripts/` renders each note to HTML with remark and Shiki and fills the shell with it (`scripts/shell.mjs`, `scripts/render-note.mjs`, `scripts/pages.mjs`). This takes about a second and needs no Astro.
 
 So a change to the look or the behaviour of the page goes into `src/`, and a change to what a note becomes goes into `scripts/`.
