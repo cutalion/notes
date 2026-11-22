@@ -2,6 +2,13 @@
 
 `notes` renders a folder of Markdown files as a local site with a sidebar, full-text search, Mermaid diagrams, code highlighting, and pages for the source files your notes link to. You run it from the root of a repository. It needs no setup there and writes everything it builds to one hidden folder.
 
+![A note with the notes tree on the left and the page contents on the right](.github/screenshots/reading.png)
+
+| | | |
+|---|---|---|
+| ![A table that fits in the column and a wider one that grows into the margins](.github/screenshots/tables.png) | ![A sequence diagram in a frame with its title and zoom controls](.github/screenshots/diagram.png) | ![Folded sections and the notes tree floating over the text](.github/screenshots/folding.png) |
+| Tables fit in the text column when they can and grow into the margins when they cannot. | Diagrams are drawn in the palette of the site, with a title, zoom, and full screen. | Sections fold by their headings, and an unpinned tree floats in on hover. |
+
 ## Install
 
 `notes` needs Node 22.12 or newer. Install it from the git repository, either for one project or for your user:
