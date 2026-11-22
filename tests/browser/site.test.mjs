@@ -412,6 +412,20 @@ test('Pagefind returns title and body matches but excludes source pages', async 
   await page.close();
 });
 
+test('the search shortcut works in a keyboard layout without the letter k', async () => {
+  const page = await browser.newPage();
+  await page.goto(baseUrl);
+
+  const pressShortcut = () => page.evaluate(() => {
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'л', code: 'KeyK', ctrlKey: true, cancelable: true }));
+    return document.querySelector('site-search dialog').open;
+  });
+
+  assert.equal(await pressShortcut(), true);
+  assert.equal(await pressShortcut(), false);
+  await page.close();
+});
+
 test('source pages expose line anchors and unavailable paths', async () => {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   await page.goto(`${baseUrl}/source/app/models/order.rb/#L13`);

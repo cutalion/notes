@@ -402,6 +402,15 @@ import Default from '@astrojs/starlight/components/Head.astro';
     });
   }
 
+  // Starlight opens the search on the letter `k`. Another keyboard layout gives the same key
+  // another letter, so repeat the shortcut for it by the position of the key.
+  window.addEventListener('keydown', (event) => {
+    const isShortcut = (event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey;
+    if (!isShortcut || event.code !== 'KeyK' || event.key === 'k') return;
+    event.preventDefault();
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', code: 'KeyK', ctrlKey: true }));
+  });
+
   document.addEventListener('DOMContentLoaded', () => {
     installSidebarSorting();
     installMermaidTools();
