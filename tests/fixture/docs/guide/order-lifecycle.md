@@ -310,6 +310,16 @@ The order becomes `refunded` only when the refunds on it add up to the captured 
 - [ ] The order status changes only through the model.
 - [ ] The customer is told by email, with the amount and the expected date.
 
+### What was done so far
+
+An item of a plan often holds several thoughts under one number. Each starts on its own line, without an empty line before it:
+
+1. [x] Send the refund in the currency of the order, in order to make `Refunds::Payback` work for every provider. Done in `51fc961`.
+   The currency comes from `payment.currency`, which the model copies from the capture.
+   A second example joins the first one in the spec, so the change ships on its own.
+2. [ ] Record every refund webhook with its amount, in order to pay back once per event.
+   The handler accepts a webhook only while the order is `paid` or `shipped`, so a second partial refund is dropped today.
+
 ## Reference
 
 ### Statuses

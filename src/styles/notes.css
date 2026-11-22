@@ -18,11 +18,13 @@
   --notes-space-4: calc(var(--notes-space-1) * 4);
   --notes-space-6: calc(var(--notes-space-1) * 6);
   --notes-space-12: calc(var(--notes-space-1) * 12);
-  /* Paragraphs stand three quarters of a line apart. */
-  --notes-space-paragraph: calc(var(--notes-text) * var(--notes-line-height) * 0.75);
+  /* Paragraphs stand three steps apart, a little less than a line. */
+  --notes-space-paragraph: calc(var(--notes-space-1) * 3);
 
   /* Page: the column holds 65 to 80 characters, and the two panels together stay narrower. */
   --notes-column: calc(var(--notes-text) * 38);
+  /* The reader may ask for a wider column. The panels keep the measure of the regular one. */
+  --notes-column-chosen: var(--notes-column);
   --notes-tree-width: calc(var(--notes-column) / 3 + var(--notes-space-2));
   --notes-toc-width: calc(var(--notes-column) / 3);
   --notes-search-width: calc(var(--notes-column) / 2);
@@ -95,7 +97,7 @@
   --sl-menu-button-size: var(--notes-control-height);
   --sl-sidebar-width: var(--notes-tree-width);
   --sl-sidebar-pad-x: var(--notes-space-1);
-  --sl-content-width: var(--notes-column);
+  --sl-content-width: var(--notes-column-chosen);
   /* On a narrow screen the side margin of the column is one line of text. */
   --sl-content-pad-x: calc(var(--notes-text) * var(--notes-line-height));
   --sl-content-gap-y: var(--notes-space-paragraph);
@@ -115,7 +117,7 @@
   --notes-color-hover: rgb(17 24 39 / 0.05);
   --notes-color-pressed: rgb(17 24 39 / 0.09);
   --notes-color-pressed-hover: rgb(17 24 39 / 0.14);
-  --notes-color-code: #f3f4f6;
+  --notes-color-code: #e9ecf1;
   --notes-shadow-layer: 0 1rem 2.5rem rgb(17 24 39 / 0.12), 0 0.125rem 0.375rem rgb(17 24 39 / 0.05);
 
   --sl-color-gray-4: #9aa1ad;
@@ -127,6 +129,18 @@
   --sl-color-bg-inline-code: var(--notes-color-code);
   --sl-color-hairline-light: var(--notes-color-line);
   --sl-color-hairline-shade: var(--notes-color-line);
+}
+
+/* The wide column is one step of the type scale wider, and the full one takes all the space
+   between the panels. A narrow screen has no room to choose from. */
+@media (min-width: 50rem) {
+  :root[data-notes-width='wide'] {
+    --notes-column-chosen: calc(var(--notes-column) * 1.25);
+  }
+
+  :root[data-notes-width='full'] {
+    --notes-column-chosen: 100%;
+  }
 }
 
 @media (min-width: 50rem) {
@@ -721,6 +735,13 @@ h1#_top {
 
 .sl-markdown-content li > :is(ul, ol):not(:where(.not-content *)) {
   margin-block-start: calc(var(--notes-space-paragraph) / 2);
+}
+
+/* A line break inside a paragraph starts a new thought of the same paragraph, so the lines
+   stand one step apart: closer than paragraphs, and farther than the lines of one sentence. */
+.sl-markdown-content .notes-break {
+  display: block;
+  height: var(--notes-space-1);
 }
 
 /* Inline code is a little smaller than the text around it and does not push the lines apart. */

@@ -49,7 +49,7 @@ Above the body text a step of the scale is about a quarter: the eye does not rea
 
 The rules that hold the scale together:
 
-- **Line length.** A line of body text has 65–80 characters. The column does not stretch with the window.
+- **Line length.** A line of body text has 65–80 characters. The column does not stretch with the window. The reader may choose a longer line, see "Page proportions".
 - **The larger, the tighter.** Large headings have a smaller line height and letter spacing, and small text has larger ones.
 - **Three weights, no more.** Weight shows structure: headings, folders, the current note. It does not emphasise separate words in the interface.
 - **Two families.** A sans serif for everything, and a monospace only for code, paths, and identifiers. Ordinary words and descriptions are not set in monospace.
@@ -67,7 +67,8 @@ The unit of the scale is half the size of the body text. Below it is called a "s
 | Parts of one element: an icon and its label | 1 step |
 | Adjacent rows of a list or the tree | Almost none: the line height itself gives the air |
 | Groups inside a panel | 2 steps |
-| Paragraphs | 2–3 steps, about three quarters of the line height |
+| The lines of one paragraph that the author broke | 1 step |
+| Paragraphs | 3 steps, a little less than the line height |
 | A block inside the text: code, diagram, table, callout | 4 steps above and below |
 | The page title and the first paragraph | 6–8 steps |
 | Sections | 10–12 steps |
@@ -95,6 +96,8 @@ The page has three zones, and the main one is the text column, whose width is se
 
 The panels can be narrowed, widened, or hidden. While the text column has enough room, its width does not change, and only the margins change.
 
+The reader can change the width of the column with a button in the header. A click moves to the next of three values, and the button shows the current one: the regular column, a wide one that is one step of the type scale wider, and the full width between the panels. A note with long list items, wide code, or many tables reads better in a wider column on a large screen, and only the reader knows the screen. The regular column is the starting state, and the panels keep their proportions to it at any choice.
+
 On a narrow screen the panels become drawers over the text. The column takes the whole width, and its side margins are at least one line height.
 
 ## The navigation tree
@@ -119,7 +122,7 @@ The header is thin and always on the screen. It holds what belongs to the whole 
 
 | What it controls | Where it stands |
 | --- | --- |
-| The whole site: search, theme, visibility of the panels | In the header |
+| The whole site: search, theme, width of the text column, visibility of the panels | In the header |
 | The tree: sorting | Above the tree |
 | The note: "Copy page" and its menu | In the header, in the right group |
 | A section: folding | In the margin, to the left of its heading |
@@ -183,7 +186,7 @@ Code, diagrams, tables, and callouts are part of the text: they stand in the tex
   3. If the margins are not enough either, a table scrolls inside the block, and its first column stays in place. A diagram shrinks to the available width.
 - **Into the margins only when needed.** A block that fits in the column stands in the column. A block in the margins is not wider than its content. Code, callouts, and quotes do not grow into the margins.
 - **On a narrow screen and in print** there are no margins, so only the first and the third steps remain.
-- **Inline code** is set in monospace slightly smaller than the text, on a barely visible background. It does not increase the line height.
+- **Inline code** is set in monospace slightly smaller than the text, on a quiet background that still shows the edges of the identifier. It does not increase the line height.
 - **A table** has no frame and no fill: a thin line separates the rows, and the column headings are set as captions, small and muted. The first and the last cells stand on the edges of the column, as the lines of text do.
 - **A diagram** stands in a frame with its own thin header: the caption on the left, the zoom controls on the right. The buttons there have the same height as the other buttons in the note.
 - **A callout** is a light background, an icon, and a semibold title. It is not brighter or more contrasting than the text around it.
@@ -208,7 +211,7 @@ Behaviour:
 
 - **The width of the panels** changes when the reader drags the border. The border looks like an ordinary thin line, and the cursor tells that it can be dragged.
 - **Width limits.** A panel cannot be narrowed until it is unreadable, or widened until it is wider than the text column.
-- **Memory.** The pinning of the panels, their width, and the sort order persist between notes. Folded sections persist for their note.
+- **Memory.** The pinning of the panels, their width, the width of the text column, and the sort order persist between notes. Folded sections persist for their note.
 - **Motion.** Only the appearance and disappearance of layers is animated, briefly. The text of the note does not shift.
 - **Keyboard.** Everything that opens with the mouse also opens from the keyboard.
 
@@ -224,7 +227,7 @@ Every new decision goes through five questions. If the answer to at least one is
 
 What to avoid:
 
-- Lines of text across the whole width of the window.
+- Lines of text across the whole width of the window, unless the reader chose the full width.
 - Navigation of the same size and weight as the text of the note.
 - Solid accent fills on list items and service buttons.
 - Frames around everything instead of space.

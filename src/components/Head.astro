@@ -17,6 +17,8 @@ import Default from '@astrojs/starlight/components/Head.astro';
     };
     if (stored('notes:mainSideBarCollapsed') === 'true') root.dataset.notesTree = 'unpinned';
     if (stored('notes:rightSideBarCollapsed') === 'true') root.dataset.notesToc = 'hidden';
+    const column = stored('notes:columnWidth');
+    if (column === 'wide' || column === 'full') root.dataset.notesWidth = column;
     const widths = [
       ['notes:leftSidebarWidth', '--notes-tree-width', 192, 576],
       ['notes:rightSidebarWidth', '--notes-toc-width', 176, 512],

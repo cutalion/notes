@@ -90,6 +90,28 @@ function codeLanguage(code) {
   return languageClass ? String(languageClass).slice('language-'.length) : 'text';
 }
 
+// A line break has no height of its own, so CSS cannot put space after it. An empty element after
+// each break carries that space: the lines of one paragraph that the author broke stand apart.
+// A table cell is too dense for that, and its breaks stay plain.
+function rehypeBreakGaps() {
+  return (tree) => {
+    const breaks = [];
+    visit(tree, 'element', (node, index, parent) => {
+      if (node.tagName === 'td' || node.tagName === 'th' || node.tagName === 'pre') return 'skip';
+      if (node.tagName === 'br' && parent) breaks.push({ index, parent });
+    });
+    // From the end, so that an insertion does not move the breaks before it.
+    for (const { index, parent } of breaks.reverse()) {
+      parent.children.splice(index + 1, 0, {
+        type: 'element',
+        tagName: 'span',
+        properties: { className: ['notes-break'] },
+        children: [],
+      });
+    }
+  };
+}
+
 function rehypeCodeBlocks({ highlight }) {
   return async (tree) => {
     const blocks = [];
@@ -133,6 +155,7 @@ export async function createNoteRenderer({ root = notesRoot, cacheRoot = path.jo
     ],
     rehypePlugins: [
       [rehypeCodeBlocks, { highlight }],
+      rehypeBreakGaps,
       ...starlight.starlightRehypePlugins(starlightOptions),
     ],
   });

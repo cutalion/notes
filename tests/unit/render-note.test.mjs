@@ -83,3 +83,15 @@ test('reuses the cached render until the note changes', async (t) => {
   fs.writeFileSync(file, '---\ntitle: Cached\n---\n\nSecond version.\n');
   assert.match((await renderer.render(file)).html, /Second version\./);
 });
+
+test('a line break inside a paragraph is followed by a gap, and a break in a table cell is not', async (t) => {
+  const root = temporaryDirectory(t, 'notes-root-');
+  const cacheRoot = temporaryDirectory(t, 'notes-cache-');
+  const file = path.join(root, 'note.md');
+  fs.writeFileSync(file, '---\ntitle: Breaks\n---\n\nFirst thought.\nSecond thought.\n\n| A |\n| --- |\n| one<br>two |\n');
+  const renderer = await createNoteRenderer({ root, cacheRoot });
+
+  const { html } = await renderer.render(file);
+  assert.match(html, /First thought\.<br><span class="notes-break"><\/span>\s*Second thought\./);
+  assert.match(html, /one<br>two/);
+});

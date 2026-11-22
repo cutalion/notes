@@ -300,7 +300,7 @@ test('desktop sizes every text from the note text and keeps the column readable'
       contentsLeft: box('.right-sidebar-container').left,
       contentsWidth: box('.right-sidebar-container').width,
       header: box('header').height,
-      controlHeights: [...document.querySelectorAll('header .notes-panel-toggle, header site-search button[data-open-modal], header select, header .notes-copy-control')]
+      controlHeights: [...document.querySelectorAll('header .notes-panel-toggle, header site-search button[data-open-modal], header select, header .notes-width, header .notes-copy-control')]
         .map((control) => Math.round(control.getBoundingClientRect().height)),
       treeBorder: getComputedStyle(document.querySelector('.sidebar-pane')).borderInlineEndColor,
       resizer: getComputedStyle(document.querySelector('[data-notes-resizer="left"]'), '::after').backgroundColor,
@@ -331,6 +331,65 @@ test('desktop sizes every text from the note text and keeps the column readable'
   assert.equal(await current.getAttribute('title'), 'Proof of payment investigation');
   assert.equal(await current.locator('span').evaluate((label) => getComputedStyle(label).webkitLineClamp), '2');
   await context.close();
+});
+
+test('the width button moves the text column through three widths, and the choice persists', async () => {
+  const context = await browser.newContext({ viewport: { width: 1900, height: 900 } });
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/guide/order-lifecycle/`);
+  const button = page.locator('[data-notes-width-switch]');
+  await button.waitFor();
+  const label = button.locator('[data-notes-width-label]');
+  const columnWidth = () => page.locator('.sl-markdown-content').evaluate((element) => element.getBoundingClientRect().width);
+  const text = await page.locator('.sl-markdown-content p').first().evaluate((element) => parseFloat(getComputedStyle(element).fontSize));
+  const between = await page.locator('.main-pane').evaluate((element) => element.getBoundingClientRect().width);
+
+  assert.equal(await label.innerText(), 'Regular');
+  assert.equal(await columnWidth(), text * 38);
+
+  await button.click();
+  assert.equal(await label.innerText(), 'Wide');
+  assert.equal(await page.locator('html').getAttribute('data-notes-width'), 'wide');
+  assert.equal(await columnWidth(), text * 38 * 1.25);
+  // The panels keep their width: they are measured by the regular column.
+  assert.ok(await page.locator('.sidebar-pane').evaluate((element) => element.getBoundingClientRect().width) < text * 38 / 2);
+
+  // The full column takes all the space between the panels, but for its side margins.
+  await button.click();
+  assert.equal(await label.innerText(), 'Full width');
+  const full = await columnWidth();
+  assert.ok(full > text * 38 * 1.25 && full <= between, `${full} of ${between}`);
+  assert.ok(full > between - text * 14, `${full} of ${between}`);
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
+
+  await page.reload();
+  assert.equal(await label.innerText(), 'Full width');
+  assert.equal(await columnWidth(), full);
+
+  // The click after the last width returns to the first one. The keyboard reaches the button too.
+  await button.focus();
+  await page.keyboard.press('Enter');
+  assert.equal(await label.innerText(), 'Regular');
+  assert.equal(await page.locator('html').getAttribute('data-notes-width'), null);
+  assert.equal(await columnWidth(), text * 38);
+  await context.close();
+});
+
+test('paragraphs stand three steps apart, and the broken lines of one paragraph a step apart', async () => {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await page.goto(`${baseUrl}/guide/order-lifecycle/`);
+  const spaces = await page.evaluate(() => {
+    const content = document.querySelector('.sl-markdown-content');
+    const first = content.querySelector(':scope > p');
+    return {
+      text: parseFloat(getComputedStyle(first).fontSize),
+      paragraphs: first.nextElementSibling.getBoundingClientRect().top - first.getBoundingClientRect().bottom,
+      lines: content.querySelector('.notes-break').getBoundingClientRect().height,
+    };
+  });
+  assert.equal(spaces.paragraphs, spaces.text * 1.5);
+  assert.equal(spaces.lines, spaces.text * 0.5);
+  await page.close();
 });
 
 test('a wide table or diagram grows into the margins, and scrolls only past them', async () => {

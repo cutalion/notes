@@ -34,6 +34,24 @@ const { hasSidebar } = Astro.locals.starlightRoute;
   <div class="notes-header-end print:hidden">
     <CopyActions />
     <div class="sl-hidden md:sl-flex">
+      <button
+        class="notes-width"
+        type="button"
+        data-notes-width-switch
+        title="Width of the text column. Click for the next one"
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="M3 5v14"></path>
+          <path d="M21 5v14"></path>
+          <path d="M7 12h10"></path>
+          <path d="m10 9-3 3 3 3"></path>
+          <path d="m14 9 3 3-3 3"></path>
+        </svg>
+        <span class="sr-only">Width of the text column:</span>
+        <span data-notes-width-label>Regular</span>
+      </button>
+    </div>
+    <div class="sl-hidden md:sl-flex">
       <ThemeSelect />
     </div>
     <button
@@ -60,6 +78,27 @@ const { hasSidebar } = Astro.locals.starlightRoute;
   // the delays it would jump out on every pass of the pointer over its button.
   const showDelay = 120;
   const hideDelay = 280;
+
+  // One click moves to the next width, and the button shows the current one. The inline script
+  // in `Head.astro` has applied the stored width before the first paint.
+  const widthSwitch = document.querySelector<HTMLButtonElement>('[data-notes-width-switch]');
+  const widthLabel = widthSwitch?.querySelector<HTMLElement>('[data-notes-width-label]');
+  if (widthSwitch && widthLabel) {
+    const names = { regular: 'Regular', wide: 'Wide', full: 'Full width' } as const;
+    const order = ['regular', 'wide', 'full'] as const;
+    const current = () => order.find((width) => width === root.dataset.notesWidth) ?? 'regular';
+    const reflect = () => { widthLabel.textContent = names[current()]; };
+    widthSwitch.addEventListener('click', () => {
+      const next = order[(order.indexOf(current()) + 1) % order.length]!;
+      if (next === 'regular') delete root.dataset.notesWidth;
+      else root.dataset.notesWidth = next;
+      localStorage.setItem('notes:columnWidth', next);
+      reflect();
+      // A diagram or a table that grew into the margins must measure itself against the new column.
+      window.dispatchEvent(new Event('resize'));
+    });
+    reflect();
+  }
 
   const panels = [
     {
@@ -154,6 +193,40 @@ const { hasSidebar } = Astro.locals.starlightRoute;
     display: flex;
     justify-content: center;
     min-width: 0;
+  }
+
+  /* The switch stands in the header next to the theme, so it has the colour of the theme switch. */
+  .notes-width {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--notes-space-1);
+    height: var(--notes-control-height);
+    padding: 0 var(--notes-space-1);
+    border: 0;
+    border-radius: var(--notes-radius-small);
+    background: transparent;
+    color: var(--notes-color-body);
+    cursor: pointer;
+    font: 500 var(--notes-text-control) / 1 var(--__sl-font);
+    white-space: nowrap;
+  }
+
+  .notes-width:hover {
+    background: var(--notes-color-hover);
+  }
+
+  .notes-width:active {
+    background: var(--notes-color-pressed);
+  }
+
+  .notes-width svg {
+    width: var(--notes-icon-size);
+    height: var(--notes-icon-size);
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: var(--notes-icon-stroke);
   }
 
   .notes-panel-toggle {
