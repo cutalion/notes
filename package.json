@@ -12,6 +12,7 @@
     "scripts",
     "src",
     "public",
+    "skills",
     "astro.config.mjs"
   ],
   "engines": {

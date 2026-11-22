@@ -89,6 +89,10 @@ Link a text file of the repository by its relative path, with `#L12` for a line 
 
 Link an image or another binary file the same way. The site serves a repository file only when a note links it.
 
+## Notes and agents
+
+`skills/notes/SKILL.md` teaches a coding agent to write notes for this tool: where a note goes, how to link code, how to title a diagram, and how to check the result with `notes build --strict`. Copy the `skills/notes` folder into the skills folder of your agent, for example `.claude/skills/notes` in your repository. In a project that has `notes` installed, the file is in `node_modules/notes/skills/notes`.
+
 ## What it writes
 
 Everything goes to the output folder, `.notes` by default: the page shell, the rendered pages, the caches, and the search index. The folder ignores itself in git, so your `.gitignore` stays as it is. Each notes folder has its own pages, caches, and search index in `sites/<folder>` there, so two folders of one repository can be served at the same time. You can delete the output folder at any time. The next run builds it again.
