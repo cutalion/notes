@@ -287,7 +287,7 @@ test('desktop sizes every text from the note text and keeps the column readable'
       folder: size('#starlight__sidebar .large'),
       note: size('#starlight__sidebar ul ul a'),
       contents: size('starlight-toc a'),
-      control: size('.notes-copy-primary'),
+      control: size('header .notes-copy-primary'),
       folderWeight: getComputedStyle(document.querySelector('#starlight__sidebar .large')).fontWeight,
       column: column.width,
       columnCenter: column.left + (column.width / 2),
@@ -295,8 +295,8 @@ test('desktop sizes every text from the note text and keeps the column readable'
       contentsLeft: box('.right-sidebar-container').left,
       contentsWidth: box('.right-sidebar-container').width,
       header: box('header').height,
-      controlHeights: [...document.querySelectorAll('header .notes-panel-toggle, header site-search button[data-open-modal], header select')]
-        .map((control) => control.getBoundingClientRect().height),
+      controlHeights: [...document.querySelectorAll('header .notes-panel-toggle, header site-search button[data-open-modal], header select, header .notes-copy-control')]
+        .map((control) => Math.round(control.getBoundingClientRect().height)),
       treeBorder: getComputedStyle(document.querySelector('.sidebar-pane')).borderInlineEndColor,
       resizer: getComputedStyle(document.querySelector('[data-notes-resizer="left"]'), '::after').backgroundColor,
     };
@@ -379,14 +379,24 @@ test('the header buttons pin the tree and hide the contents, and the choice pers
   assert.equal(await root.getAttribute('data-notes-toc'), 'hidden');
   assert.equal(await tocToggle.getAttribute('aria-pressed'), 'false');
   assert.equal(await page.evaluate(() => localStorage.getItem('notes:rightSideBarCollapsed')), 'true');
-  assert.equal(await page.locator('.right-sidebar-container').isVisible(), false);
+  await page.waitForFunction(() => getComputedStyle(document.querySelector('.right-sidebar')).visibility === 'hidden');
+  assert.equal(await page.locator('.right-sidebar-container').evaluate((element) => element.getBoundingClientRect().width), 0);
   assert.equal(await tocToggle.isVisible(), true);
+
+  // Unpinned contents float in the same way, from their own button.
+  await page.mouse.move(700, 500);
+  await tocToggle.hover();
+  await page.waitForFunction(() => document.documentElement.hasAttribute('data-notes-toc-peek'));
+  await page.waitForFunction(() => getComputedStyle(document.querySelector('.right-sidebar')).opacity === '1');
+  assert.equal(await page.locator('starlight-toc a').first().isVisible(), true);
+  await page.mouse.move(700, 500);
+  await page.waitForFunction(() => !document.documentElement.hasAttribute('data-notes-toc-peek'));
 
   await page.reload();
   assert.equal(await root.getAttribute('data-notes-tree'), 'unpinned');
   assert.equal(await root.getAttribute('data-notes-toc'), 'hidden');
   assert.equal(await treeToggle.getAttribute('aria-pressed'), 'false');
-  assert.equal(await page.locator('.right-sidebar-container').isVisible(), false);
+  assert.equal(await page.locator('.right-sidebar').isVisible(), false);
 
   // The keyboard reaches the same button: Enter pins the tree back.
   await treeToggle.focus();
@@ -438,7 +448,7 @@ test('note actions copy raw Markdown and the project-relative file path', async 
   const source = fs.readFileSync(path.join(fixtureRoot, 'docs', 'proofs', 'investigation.md'), 'utf8');
 
   await page.goto(`${baseUrl}${noteRoute}/`);
-  const actions = page.locator('[data-note-actions]');
+  const actions = page.locator('header [data-note-actions]');
   await actions.locator('[data-note-copy="markdown"]').first().click();
   await page.waitForFunction((expected) => window.__copiedNoteValue === expected, source);
   assert.equal(await actions.locator('[data-note-copy-label]').textContent(), 'Copied Markdown');

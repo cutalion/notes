@@ -383,6 +383,23 @@ import Default from '@astrojs/starlight/components/Head.astro';
     });
   }
 
+  function installCodeCopy() {
+    for (const button of document.querySelectorAll<HTMLButtonElement>('.notes-code-copy')) {
+      let resetTimer: number | undefined;
+      button.addEventListener('click', async () => {
+        const code = button.parentElement?.querySelector('pre')?.textContent ?? '';
+        try {
+          await navigator.clipboard.writeText(code);
+          button.dataset.copied = '';
+          window.clearTimeout(resetTimer);
+          resetTimer = window.setTimeout(() => delete button.dataset.copied, 1500);
+        } catch (error) {
+          console.error(error);
+        }
+      });
+    }
+  }
+
   // Starlight opens the search on the letter `k`. Another keyboard layout gives the same key
   // another letter, so repeat the shortcut for it by the position of the key.
   window.addEventListener('keydown', (event) => {
@@ -395,6 +412,7 @@ import Default from '@astrojs/starlight/components/Head.astro';
   document.addEventListener('DOMContentLoaded', () => {
     installSidebarSorting();
     installTreeTooltips();
+    installCodeCopy();
     installMermaidTools();
     requestAnimationFrame(installSidebarResizers);
   });

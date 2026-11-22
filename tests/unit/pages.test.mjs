@@ -30,7 +30,7 @@ test('a folder without index.md gets a home page that lists its notes', { timeou
   const page = fs.readFileSync(file, 'utf8');
 
   assert.equal(file, notePageFile(pagesRoot, '/'));
-  assert.match(page, /<h1 id="_top"[^>]*>Fixture Notes<\/h1><\/div><script/);
+  assert.match(page, /<h1 id="_top"[^>]*>Fixture Notes<\/h1>/);
   assert.match(page, /<h2 id="group-\d">Notes<\/h2><ul><li><a href="\/setup">Set up &lt;the&gt; tool<\/a><\/li><\/ul>/);
   assert.match(page, /<h2 id="group-\d">payments<\/h2><ul><li><a href="\/payments\/refunds">refunds<\/a><\/li><\/ul>/);
   assert.doesNotMatch(page, /notes-copy-actions |notes(title|description|toc|content|path|projectpath|rawurl)marker/);

@@ -75,7 +75,6 @@ export default defineConfig({
       components: {
         Head: source('components/Head.astro'),
         Header: source('components/Header.astro'),
-        PageTitle: source('components/PageTitle.astro'),
         Pagination: source('components/Pagination.astro'),
         Sidebar: source('components/Sidebar.astro'),
       },

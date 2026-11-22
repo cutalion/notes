@@ -1,92 +1,73 @@
 ---
-import Default from '@astrojs/starlight/components/PageTitle.astro';
-
 const { entry } = Astro.locals.starlightRoute;
-// `fillShell()` in `scripts/shell.mjs` replaces both markers with the paths of the note.
+// `fillShell()` in `scripts/shell.mjs` replaces both markers with the paths of the note, and
+// removes the whole block from a page that has no Markdown file behind it.
 const isNote = entry.id === 'notespathmarker';
 const rawUrl = '/notesrawurlmarker';
 const projectPath = 'notesprojectpathmarker';
 ---
 
-<div class="notes-page-heading">
-  <Default {...Astro.props} />
-  {isNote && (
-    <div
-      class="notes-copy-actions"
-      data-note-actions
-      data-note-raw-url={rawUrl}
-      data-note-project-path={projectPath}
-    >
-      <div class="notes-copy-control">
-        <button class="notes-copy-primary" type="button" data-note-copy="markdown">
-          <svg aria-hidden="true" viewBox="0 0 24 24">
-            <rect width="13" height="13" x="8" y="8" rx="2"></rect>
-            <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path>
-          </svg>
-          <span data-note-copy-label>Copy page</span>
-        </button>
-        <details class="notes-copy-dropdown">
-          <summary aria-label="Show copy options" title="Show copy options">
-            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"></path></svg>
-          </summary>
-          <div class="notes-copy-menu">
-            <button type="button" data-note-copy="markdown">
-              <svg aria-hidden="true" viewBox="0 0 24 24">
-                <rect width="13" height="13" x="8" y="8" rx="2"></rect>
-                <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path>
-              </svg>
-              <span>
-                <strong>Copy Markdown</strong>
-                <small>Copy note content as text</small>
-              </span>
-            </button>
-            <button type="button" data-note-copy="path" title={projectPath}>
-              <svg aria-hidden="true" viewBox="0 0 24 24">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path>
-                <path d="M14 2v6h6M8 13h8M8 17h8"></path>
-              </svg>
-              <span>
-                <strong>Copy file path</strong>
-                <small>{projectPath}</small>
-              </span>
-            </button>
-            <a href={rawUrl}>
-              <svg aria-hidden="true" viewBox="0 0 24 24">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path>
-                <path d="M14 2v6h6M9 18v-5l2 2 2-2v5"></path>
-              </svg>
-              <span>
-                <strong>Open Markdown</strong>
-                <small>{rawUrl}</small>
-              </span>
-            </a>
-          </div>
-        </details>
-      </div>
-      <span class="notes-copy-status" data-note-copy-status aria-live="polite"></span>
+{isNote && (
+  <div
+    class="notes-copy-actions"
+    data-note-actions
+    data-note-raw-url={rawUrl}
+    data-note-project-path={projectPath}
+  >
+    <div class="notes-copy-control">
+      <button class="notes-copy-primary" type="button" data-note-copy="markdown">
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <rect width="13" height="13" x="8" y="8" rx="2"></rect>
+          <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path>
+        </svg>
+        <span data-note-copy-label>Copy page</span>
+      </button>
+      <details class="notes-copy-dropdown">
+        <summary aria-label="Show copy options" title="Show copy options">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"></path></svg>
+        </summary>
+        <div class="notes-copy-menu">
+          <button type="button" data-note-copy="markdown">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <rect width="13" height="13" x="8" y="8" rx="2"></rect>
+              <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path>
+            </svg>
+            <span>
+              <strong>Copy Markdown</strong>
+              <small>Copy note content as text</small>
+            </span>
+          </button>
+          <button type="button" data-note-copy="path" title={projectPath}>
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path>
+              <path d="M14 2v6h6M8 13h8M8 17h8"></path>
+            </svg>
+            <span>
+              <strong>Copy file path</strong>
+              <small>{projectPath}</small>
+            </span>
+          </button>
+          <a href={rawUrl}>
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path>
+              <path d="M14 2v6h6M9 18v-5l2 2 2-2v5"></path>
+            </svg>
+            <span>
+              <strong>Open Markdown</strong>
+              <small>{rawUrl}</small>
+            </span>
+          </a>
+        </div>
+      </details>
     </div>
-  )}
-</div>
+    <span class="notes-copy-status" data-note-copy-status aria-live="polite"></span>
+  </div>
+)}
 
 <script>
   async function copyText(value: string) {
     if (!navigator.clipboard?.writeText) throw new Error('Clipboard access is unavailable');
     await navigator.clipboard.writeText(value);
-  }
-
-  for (const button of document.querySelectorAll<HTMLButtonElement>('.notes-code-copy')) {
-    let resetTimer: number | undefined;
-    button.addEventListener('click', async () => {
-      const code = button.parentElement?.querySelector('pre')?.textContent ?? '';
-      try {
-        await copyText(code);
-        button.dataset.copied = '';
-        window.clearTimeout(resetTimer);
-        resetTimer = window.setTimeout(() => delete button.dataset.copied, 1500);
-      } catch (error) {
-        console.error(error);
-      }
-    });
   }
 
   for (const actions of document.querySelectorAll<HTMLElement>('[data-note-actions]')) {
@@ -145,39 +126,21 @@ const projectPath = 'notesprojectpathmarker';
 </script>
 
 <style>
-  .notes-page-heading {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: var(--notes-space-2) var(--notes-space-4);
-  }
-
-  .notes-page-heading :global(h1) {
-    flex: 1 1 20rem;
-    min-width: 0;
-    margin: 0;
-    color: var(--notes-color-ink);
-    font-size: var(--notes-text-title);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-  }
-
-  /* The button sits on the first line of the title: both have the same line box height. */
   .notes-copy-actions {
     position: relative;
-    z-index: 4;
     display: flex;
     flex: 0 0 auto;
     align-items: center;
-    height: calc(var(--notes-text-title) * 1.2);
   }
 
   .notes-copy-control {
     display: flex;
     border: 1px solid var(--notes-color-line);
     border-radius: var(--notes-radius-small);
+  }
+
+  .notes-copy-dropdown {
+    display: flex;
   }
 
   .notes-copy-primary,
@@ -238,7 +201,8 @@ const projectPath = 'notesprojectpathmarker';
 
   .notes-copy-menu {
     position: absolute;
-    inset-block-start: calc(100% + var(--notes-space-1) / 2);
+    z-index: 1;
+    inset-block-start: calc(100% + var(--notes-space-1));
     inset-inline-end: 0;
     display: flex;
     flex-direction: column;
@@ -314,9 +278,27 @@ const projectPath = 'notesprojectpathmarker';
     white-space: nowrap;
   }
 
-  @media (max-width: 40rem) {
+  /* A narrow header keeps the icon and drops the words. The menu takes the width of the screen. */
+  @media (max-width: 50rem) {
+    .notes-copy-primary {
+      width: calc(var(--notes-control-height) - 2px);
+      padding-inline: 0;
+    }
+
+    .notes-copy-primary [data-note-copy-label] {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
     .notes-copy-menu {
-      inset-inline: 0 auto;
+      position: fixed;
+      inset-block-start: var(--sl-nav-height);
+      inset-inline: var(--notes-space-1);
+      width: auto;
     }
   }
 </style>
