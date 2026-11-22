@@ -407,6 +407,58 @@ test('a wide table or diagram grows into the margins, and scrolls only past them
   await context.close();
 });
 
+test('a heading folds its section, the choice persists, and a link opens the section again', async () => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/guide/order-lifecycle/`);
+  const fold = (id) => page.locator(`.sl-heading-wrapper:has(#${id}) .notes-fold`);
+  const visible = (id) => page.locator(`#${id}`).isVisible();
+  await fold('checkout').waitFor({ state: 'attached' });
+
+  // The mark hangs in the margin, to the left of the edge of the text, and shows on hover.
+  const heading = page.locator('.sl-heading-wrapper:has(#checkout)');
+  assert.equal(await fold('checkout').evaluate((button) => getComputedStyle(button).opacity), '0');
+  await heading.hover();
+  await page.waitForFunction(() => getComputedStyle(document.querySelector('.sl-heading-wrapper:has(#checkout) .notes-fold')).opacity === '1');
+  const edges = await heading.evaluate((wrapper) => [
+    wrapper.querySelector('.notes-fold').getBoundingClientRect().right,
+    wrapper.querySelector('h2').getBoundingClientRect().left,
+  ]);
+  assert.ok(edges[0] <= edges[1], JSON.stringify(edges));
+
+  // A folded section hides its text and its subsections, and nothing of the next section.
+  await fold('checkout').click();
+  assert.equal(await fold('checkout').getAttribute('aria-expanded'), 'false');
+  assert.deepEqual(
+    await Promise.all(['checkout', 'validation', 'stock-reservation', 'payment'].map(visible)),
+    [true, false, false, true],
+  );
+  assert.equal(await fold('checkout').evaluate((button) => getComputedStyle(button).opacity), '1');
+
+  // A subsection folds on its own, and stays folded when the section around it opens again.
+  await fold('authorization').click();
+  assert.deepEqual(await Promise.all(['authorization', 'capture'].map(visible)), [true, true]);
+  assert.equal(await page.locator('.sl-heading-wrapper:has(#authorization) + *').isVisible(), false);
+
+  await page.reload();
+  await fold('checkout').waitFor({ state: 'attached' });
+  assert.equal(await visible('validation'), false);
+  assert.equal(await fold('authorization').getAttribute('aria-expanded'), 'false');
+
+  // The contents lead into the folded section, so the section opens.
+  await page.locator('starlight-toc a[href="#stock-reservation"]').click();
+  await page.waitForFunction(() => document.querySelector('#stock-reservation').getClientRects().length > 0);
+  assert.equal(await fold('checkout').getAttribute('aria-expanded'), 'true');
+  assert.equal(await page.locator('.sl-markdown-content > table').first().isVisible(), true);
+
+  // With Alt the mark folds every section of its level.
+  await fold('payment').click({ modifiers: ['Alt'] });
+  assert.deepEqual(await Promise.all(['checkout', 'validation', 'shipping', 'carriers'].map(visible)), [true, false, true, false]);
+  await fold('payment').click({ modifiers: ['Alt'] });
+  assert.equal(await page.locator('.sl-markdown-content > [data-notes-folded]:not(.sl-heading-wrapper:has(#authorization) ~ *)').count(), 0);
+  await context.close();
+});
+
 test('the header buttons pin the tree and hide the contents, and the choice persists', async () => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();

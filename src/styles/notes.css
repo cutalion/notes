@@ -839,6 +839,83 @@ h1#_top {
   box-shadow: calc(var(--notes-space-1) * -1) 0 0 var(--notes-color-accent-soft);
 }
 
+/* Folding of sections */
+
+/* The mark hangs in the margin to the left of the heading, outside the edge of the text. It is
+   quiet: it shows when the pointer is on the heading, and stays while the section is folded. */
+.sl-markdown-content .sl-heading-wrapper {
+  --notes-fold-top: 0px;
+  position: relative;
+}
+
+.sl-markdown-content .sl-heading-wrapper.level-h2:not(:first-child) {
+  --notes-fold-top: var(--notes-space-6);
+}
+
+.notes-fold {
+  position: absolute;
+  inset-block-start: var(--notes-fold-top);
+  inset-inline-start: calc(var(--notes-text) * -1.625);
+  display: grid;
+  place-items: center;
+  width: calc(var(--notes-text) * 1.5);
+  height: 1lh;
+  margin: 0 !important;
+  padding: 0;
+  border: 0;
+  border-radius: var(--notes-radius-small);
+  background: transparent;
+  color: var(--notes-color-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+.notes-fold svg {
+  width: var(--notes-icon-size);
+  height: var(--notes-icon-size);
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: var(--notes-icon-stroke);
+  transition: rotate 0.12s;
+}
+
+.notes-fold[aria-expanded='false'] svg {
+  rotate: -90deg;
+}
+
+.sl-heading-wrapper:hover .notes-fold,
+.notes-fold:focus-visible,
+.notes-fold[aria-expanded='false'] {
+  opacity: 1;
+}
+
+.notes-fold:hover {
+  background: var(--notes-color-hover);
+  color: var(--notes-color-ink);
+}
+
+/* A screen without a pointer has no hover, so the marks are always there. */
+@media (hover: none) {
+  .notes-fold {
+    opacity: 1;
+  }
+}
+
+@media not print {
+  .sl-markdown-content > [data-notes-folded] {
+    display: none !important;
+  }
+}
+
+@media print {
+  .notes-fold {
+    display: none;
+  }
+}
+
 /* Tables and wide blocks */
 
 /* The space between the panels is the measure for a block that the column cannot hold. */

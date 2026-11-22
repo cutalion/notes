@@ -420,6 +420,104 @@ import Default from '@astrojs/starlight/components/Head.astro';
       }
     };
     new ResizeObserver(measure).observe(pane);
+    // Unfolding a section sends this event: a table that was hidden measures itself now.
+    window.addEventListener('resize', measure);
+  }
+
+  // Every heading gets a mark that folds its section: all that stands below the heading, up to
+  // the next heading of the same or a higher level. The note is a flat list of blocks, so a block
+  // is hidden when any heading above it in the outline is folded.
+  function installSectionFolding() {
+    const content = document.querySelector<HTMLElement>('.sl-markdown-content');
+    if (!content) return;
+    const level = (element: Element) => Number(element.className.match(/level-h(\d)/)?.[1] ?? 0);
+    const wrappers = [...content.children].filter((child): child is HTMLElement => (
+      child.classList.contains('sl-heading-wrapper') && Boolean(child.querySelector('[id]'))
+    ));
+    if (!wrappers.length) return;
+    const id = (wrapper: HTMLElement) => wrapper.querySelector('[id]')!.id;
+    const storageKey = `notes:foldedSections:${location.pathname}`;
+    let stored: string[] = [];
+    try {
+      stored = JSON.parse(localStorage.getItem(storageKey) ?? '[]');
+    } catch {
+      stored = [];
+    }
+    const folded = new Set(wrappers.filter((wrapper) => stored.includes(id(wrapper))));
+
+    const draw = () => {
+      // The folded headings above the current block, the outermost first.
+      const outline: HTMLElement[] = [];
+      for (const child of content.children) {
+        const isHeading = wrappers.includes(child as HTMLElement);
+        if (isHeading) {
+          while (outline.length && level(outline[outline.length - 1]) >= level(child)) outline.pop();
+        }
+        child.toggleAttribute('data-notes-folded', outline.some((wrapper) => folded.has(wrapper)));
+        if (isHeading) outline.push(child as HTMLElement);
+      }
+      for (const wrapper of wrappers) {
+        wrapper.toggleAttribute('data-notes-section-folded', folded.has(wrapper));
+        wrapper.querySelector('.notes-fold')?.setAttribute('aria-expanded', String(!folded.has(wrapper)));
+      }
+      if (folded.size) localStorage.setItem(storageKey, JSON.stringify([...folded].map(id)));
+      else localStorage.removeItem(storageKey);
+      // A diagram or a table that was hidden has not measured itself yet.
+      window.dispatchEvent(new Event('resize'));
+    };
+
+    // A link to a place inside a folded section opens every section around that place.
+    const reveal = (hash: string) => {
+      let target: Element | null = null;
+      try {
+        target = hash.length > 1 ? document.getElementById(decodeURIComponent(hash.slice(1))) : null;
+      } catch {
+        return;
+      }
+      while (target && target.parentElement !== content) target = target.parentElement;
+      if (!target) return;
+      let limit = wrappers.includes(target as HTMLElement) ? level(target) : 7;
+      let opened = false;
+      for (let block = target.previousElementSibling; block; block = block.previousElementSibling) {
+        if (!wrappers.includes(block as HTMLElement) || level(block) >= limit) continue;
+        limit = level(block);
+        opened = folded.delete(block as HTMLElement) || opened;
+      }
+      if (!opened) return;
+      draw();
+      document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView();
+    };
+
+    for (const wrapper of wrappers) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'notes-fold';
+      button.title = 'Fold or unfold the section. With Alt, all sections of this level';
+      button.setAttribute('aria-label', `Section: ${wrapper.querySelector('[id]')!.textContent}`);
+      button.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>';
+      button.addEventListener('click', (event) => {
+        const fold = !folded.has(wrapper);
+        const targets = event.altKey ? wrappers.filter((other) => level(other) === level(wrapper)) : [wrapper];
+        for (const target of targets) {
+          if (fold) folded.add(target);
+          else folded.delete(target);
+        }
+        // The heading stays where it is on the screen, whatever folds above it.
+        const top = wrapper.getBoundingClientRect().top;
+        draw();
+        window.scrollBy(0, wrapper.getBoundingClientRect().top - top);
+      });
+      // The heading must stay the first child: Starlight styles it by that.
+      wrapper.append(button);
+    }
+
+    draw();
+    reveal(location.hash);
+    window.addEventListener('hashchange', () => reveal(location.hash));
+    document.addEventListener('click', (event) => {
+      const link = (event.target as Element).closest<HTMLAnchorElement>('a[href^="#"]');
+      if (link) reveal(link.hash);
+    });
   }
 
   function installCodeCopy() {
@@ -453,6 +551,7 @@ import Default from '@astrojs/starlight/components/Head.astro';
     installTreeTooltips();
     installCodeCopy();
     installWideTables();
+    installSectionFolding();
     installMermaidTools();
     requestAnimationFrame(installSidebarResizers);
   });

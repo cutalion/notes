@@ -122,6 +122,7 @@ The header is thin and always on the screen. It holds what belongs to the whole 
 | The whole site: search, theme, visibility of the panels | In the header |
 | The tree: sorting | Above the tree |
 | The note: "Copy page" and its menu | In the header, in the right group |
+| A section: folding | In the margin, to the left of its heading |
 | A block: the zoom of a diagram | In the header of the block itself |
 
 Rules:
@@ -188,6 +189,7 @@ Code, diagrams, tables, and callouts are part of the text: they stand in the tex
 - **A callout** is a light background, an icon, and a semibold title. It is not brighter or more contrasting than the text around it.
 - **Lists.** The space between items is half the space between paragraphs.
 - **A section** reads as a unit: a line and a large space separate its heading from the text above.
+- **A section folds.** Every heading has a disclosure mark that hides the section: everything below the heading, up to the next heading of the same or a higher level. The mark hangs in the margin to the left of the heading, shows when the pointer is on the heading, and stays visible while the section is folded. A link into a folded section opens it.
 - **Corner radii** come from two values. The small one is for buttons and code backgrounds; the large one, one and a half to two times larger, is for blocks, menus, and floating panels.
 
 ## States and behaviour
@@ -206,7 +208,7 @@ Behaviour:
 
 - **The width of the panels** changes when the reader drags the border. The border looks like an ordinary thin line, and the cursor tells that it can be dragged.
 - **Width limits.** A panel cannot be narrowed until it is unreadable, or widened until it is wider than the text column.
-- **Memory.** The pinning of the panels, their width, and the sort order persist between notes.
+- **Memory.** The pinning of the panels, their width, and the sort order persist between notes. Folded sections persist for their note.
 - **Motion.** Only the appearance and disappearance of layers is animated, briefly. The text of the note does not shift.
 - **Keyboard.** Everything that opens with the mouse also opens from the keyboard.
 
