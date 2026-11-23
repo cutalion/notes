@@ -17,7 +17,11 @@ const fixtureDirectory = path.join(notesRoot, 'zz-fixture');
 const fixtureFile = path.join(fixtureDirectory, 'search-fixture.md');
 const fixtureRoute = '/zz-fixture/search-fixture/';
 const fixtureRawRoute = '/zz-fixture/search-fixture.md';
-const fixtureSourceRoute = '/source/app/models/shipment.rb/';
+// The test note links a source file of its own. A file of the fixture may be linked by another
+// note, and then its page stays when the test note is gone.
+const fixtureSourceDirectory = path.join(fixtureRoot, 'app', 'zz_fixture');
+const fixtureSourceFile = path.join(fixtureSourceDirectory, 'quasar.rb');
+const fixtureSourceRoute = '/source/app/zz_fixture/quasar.rb/';
 const memoryLimitKb = 500 * 1024;
 const testPort = await findFreePort();
 const baseUrl = `http://127.0.0.1:${testPort}`;
@@ -103,6 +107,7 @@ function sampleMemory() {
 }
 
 assert.equal(fs.existsSync(fixtureFile), false, `${fixtureFile} already exists`);
+assert.equal(fs.existsSync(fixtureSourceFile), false, `${fixtureSourceFile} already exists`);
 
 try {
   // Runs the dev script the way `notes dev` does, without the wrapper, so the memory check sees only the server.
@@ -119,6 +124,8 @@ try {
   );
   memorySampler = setInterval(sampleMemory, 50);
 
+  fs.mkdirSync(fixtureSourceDirectory, { recursive: true });
+  fs.writeFileSync(fixtureSourceFile, 'class Quasar\nend\n');
   fs.mkdirSync(fixtureDirectory, { recursive: true });
   fs.writeFileSync(fixtureFile, `---
 title: Dynamic navigation fixture
@@ -127,7 +134,7 @@ group: Fixture topic
 order: 1
 ---
 
-The unique Pagefind phrase is quasar plumage 93817. It links [the shipment model](../../app/models/shipment.rb).
+The unique Pagefind phrase is quasar plumage 93817. It links [a model of its own](../../app/zz_fixture/quasar.rb).
 `);
   fixtureAdded = true;
 
@@ -163,10 +170,13 @@ The unique Pagefind phrase is quasar plumage 93817. It links [the shipment model
 } finally {
   await browser?.close();
   if (fs.existsSync(fixtureFile)) fs.rmSync(fixtureFile);
-  try {
-    fs.rmdirSync(fixtureDirectory);
-  } catch {
-    // Preserve the directory if it contains user files.
+  if (fs.existsSync(fixtureSourceFile)) fs.rmSync(fixtureSourceFile);
+  for (const directory of [fixtureDirectory, fixtureSourceDirectory]) {
+    try {
+      fs.rmdirSync(directory);
+    } catch {
+      // Preserve the directory if it contains user files.
+    }
   }
   if (fixtureAdded && server?.exitCode === null) {
     try {
