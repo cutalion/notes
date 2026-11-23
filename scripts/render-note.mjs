@@ -10,7 +10,7 @@ import { visit } from 'unist-util-visit';
 
 import { parseFrontmatter } from './content.mjs';
 import { hashFiles, writeFileAtomically } from './files.mjs';
-import { createCodeHighlighter } from './highlight.mjs';
+import { codeCopyButton, createCodeHighlighter } from './highlight.mjs';
 import { remarkIconLists } from './icon-lists.mjs';
 import { remarkLocalLinks } from './links.mjs';
 import { configFile, dependencyRoot, notesRoot, options, outRoot, packageRoot, siteRoot } from './paths.mjs';
@@ -28,7 +28,6 @@ const rendererFiles = [
 ];
 const starlightRoot = dependencyRoot('@astrojs/starlight');
 const starlightTranslations = JSON.parse(fs.readFileSync(path.join(starlightRoot, 'translations', 'en.json'), 'utf8'));
-const copyIcon = '<svg aria-hidden="true" viewBox="0 0 24 24"><rect width="13" height="13" x="8" y="8" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg>';
 
 function escapeHtml(value) {
   return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
@@ -126,8 +125,7 @@ function rehypeCodeBlocks({ highlight }) {
     for (const { code, index, parent } of blocks) {
       const text = code.children.map((child) => child.value ?? '').join('').replace(/\n$/, '');
       const highlighted = await highlight(text, codeLanguage(code));
-      const copyButton = `<button class="notes-code-copy" type="button" aria-label="Copy code" title="Copy code">${copyIcon}</button>`;
-      parent.children[index] = { type: 'raw', value: `<div class="notes-code">${highlighted}${copyButton}</div>` };
+      parent.children[index] = { type: 'raw', value: `<div class="notes-code">${highlighted}${codeCopyButton}</div>` };
     }
   };
 }

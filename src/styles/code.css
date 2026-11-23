@@ -50,6 +50,7 @@
 }
 
 .notes-code:hover .notes-code-copy,
+.source-code:hover .notes-code-copy,
 .notes-code-copy:focus-visible,
 .notes-code-copy[data-copied] {
   opacity: 1;

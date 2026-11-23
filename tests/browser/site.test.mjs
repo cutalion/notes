@@ -746,6 +746,32 @@ test('the search shortcut works in a keyboard layout without the letter k', asyn
   await page.close();
 });
 
+test('a source page copies the file as it is on disk', async () => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await context.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: async (value) => { window.__copiedSource = value; },
+      },
+    });
+  });
+  const page = await context.newPage();
+  const source = fs.readFileSync(path.join(fixtureRoot, 'app', 'models', 'order.rb'), 'utf8');
+  await page.goto(`${baseUrl}/source/app/models/order.rb/`);
+
+  // The button is quiet, as in a code block of a note: it shows when the pointer is on the file.
+  const copy = page.locator('.source-code .notes-code-copy');
+  assert.equal(await copy.evaluate((button) => getComputedStyle(button).opacity), '0');
+  await page.locator('.source-code pre').hover();
+  await page.waitForFunction(() => getComputedStyle(document.querySelector('.source-code .notes-code-copy')).opacity === '1');
+
+  await copy.click();
+  await page.waitForFunction((expected) => window.__copiedSource === expected, source);
+  await page.locator('.source-code .notes-code-copy[data-copied]').waitFor();
+  await context.close();
+});
+
 test('source pages expose line anchors and unavailable paths', async () => {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   await page.goto(`${baseUrl}/source/app/models/order.rb/#L13`);

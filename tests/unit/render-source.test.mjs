@@ -30,6 +30,7 @@ test('renders a linked repository file into the source shell page', { timeout: 3
   assert.match(page, /<meta name="description" content="Repository source: app\/models\/user\.rb"\/>/);
   assert.match(page, /<h1 id="_top"[^>]*>user\.rb<\/h1><\/div>/);
   assert.match(page, /<p class="source-path">app\/models\/user\.rb<\/p><div class="source-code"><pre class="shiki/);
+  assert.match(page, /<\/pre><button class="notes-code-copy" type="button" aria-label="Copy code"/);
   assert.match(page, /<span class="line" id="L1"><span style="--shiki-light:[^"]+">class<\/span>/);
   assert.doesNotMatch(page, /notes-copy-actions|data-pagefind-body|notes(title|description|toc|content)marker/);
 });

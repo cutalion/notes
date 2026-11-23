@@ -1,5 +1,7 @@
 import path from 'node:path';
 
+import { codeCopyButton } from './highlight.mjs';
+
 const languages = {
   '.css': 'css',
   '.csv': 'csv',
@@ -64,5 +66,5 @@ export function sourceViewHtml(repoRelative, highlighted) {
   if (highlighted === undefined) {
     return `<div class="source-view" data-pagefind-ignore><p class="source-path">${sourcePath}</p><h2>Unavailable in this checkout</h2><p>The note links this repository path, but it is not an available text file in the current checkout. It may belong to another branch, a historical revision, or a directory that is intentionally not exposed.</p></div>`;
   }
-  return `<div class="source-view" data-pagefind-ignore><p class="source-path">${sourcePath}</p><div class="source-code">${highlighted}</div></div>${sourceRangeScript}`;
+  return `<div class="source-view" data-pagefind-ignore><p class="source-path">${sourcePath}</p><div class="source-code">${highlighted}${codeCopyButton}</div></div>${sourceRangeScript}`;
 }

@@ -826,6 +826,11 @@ h1#_top {
   font-size: var(--notes-text-nav);
 }
 
+/* The copy button of the file stands in the corner of the block, as in a code block of a note. */
+.source-code {
+  position: relative;
+}
+
 .source-code pre {
   box-sizing: border-box;
   max-width: 100%;
