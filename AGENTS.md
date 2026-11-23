@@ -6,7 +6,7 @@
 
 The site looks like Astro with Starlight, but Astro does not render the notes.
 
-1. **The shell.** Astro builds one template page from `src/shell/` with markers in place of the title, the body, the sidebar, and the contents. This runs on the first start and after a change in `src/`, in `public/`, or in the dependencies. It takes about ten seconds.
+1. **The shell.** Astro builds one template page from `src/shell/` with markers in place of the title, the body, the sidebar, and the contents. This runs on the first start and after a change in `src/`, in `public/`, or in the dependencies. It takes about five seconds.
 2. **The notes.** `scripts/` renders each note to HTML with remark and Shiki and fills the shell with it (`scripts/shell.mjs`, `scripts/render-note.mjs`, `scripts/pages.mjs`). This takes about a second and needs no Astro.
 
 So a change to the look or the behaviour of the page goes into `src/`, and a change to what a note becomes goes into `scripts/`.
@@ -59,6 +59,7 @@ Run the unit tests and the browser tests before you say that a change works. A c
 - **A script that measures must run again after an unfold.** A folded section is `display: none`, so a diagram or a table in it has no size. Unfolding sends a `resize` event to the window, and the code that measures listens to it.
 - **Generated pages have no copy button.** `withoutCopyActions()` in `scripts/shell.mjs` cuts the block that starts with `<div class="notes-copy-actions `. Keep that opening tag as it is, or change both places.
 - **The markers in the shell are plain strings**, such as `notespathmarker` and `notestitlemarker`. `scripts/shell.mjs` replaces them, and a component must not change them on the way.
+- **Mermaid is served, not bundled.** The page script in `Head.astro` imports `/_mermaid/` and `/_mermaid-layout-elk/` by a path in a variable, and `scripts/site-server.mjs` serves those paths from the `dist` folders of the two packages. An import that Vite can follow puts the library back into the shell build, which then takes twice the time and the memory.
 - **A Mermaid title is taken at build time.** `mermaidTitle()` in `scripts/render-note.mjs` moves a front matter `title` out of the source, so that the picture does not repeat the header of its block.
 
 ## Conventions
@@ -67,5 +68,5 @@ Run the unit tests and the browser tests before you say that a change works. A c
 - **Tests** name a behaviour that a reader sees, for example "a wide table or diagram grows into the margins, and scrolls only past them". A browser test waits for a state with `waitFor` or `waitForFunction`, never for a fixed time.
 - **The fixture is the sample.** `tests/fixture/docs/guide/order-lifecycle.md` is a long note with every kind of block. Add a new kind of content there, so that the tests and the screenshots can use it.
 - **Commits** have an imperative subject without a prefix, for example "Fold a section by its heading", and a body that says what changed for the reader of the site.
-- **Dependencies** are pinned to exact versions. `astro.config.mjs` patches the loader of `astro-mermaid` and fails loudly when the patch no longer applies, so read that file before an update.
+- **Dependencies** are pinned to exact versions.
 - **The screenshots in the README** live in `.github/screenshots/` and show the fixture site. Take them again after a visible change to the layout.

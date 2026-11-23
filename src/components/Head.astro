@@ -385,6 +385,73 @@ import Default from '@astrojs/starlight/components/Head.astro';
     fit();
   }
 
+  // Mermaid and its ELK layout come from the server as their packages ship them. A path in a
+  // variable keeps the bundler away from them: the shell build must not bundle the library.
+  const mermaidModule = '/_mermaid/mermaid.esm.min.mjs';
+  const elkModule = '/_mermaid-layout-elk/mermaid-layout-elk.esm.min.mjs';
+  let mermaidLoading: Promise<any> | undefined;
+
+  function loadMermaid() {
+    mermaidLoading ??= Promise.all([
+      import(/* @vite-ignore */ mermaidModule),
+      import(/* @vite-ignore */ elkModule),
+    ]).then(([{ default: mermaid }, { default: elkLayouts }]) => {
+      // Left on, Mermaid draws every diagram itself when the page has loaded, with its default config.
+      mermaid.startOnLoad = false;
+      mermaid.registerLayoutLoaders(elkLayouts);
+      return mermaid;
+    });
+    return mermaidLoading;
+  }
+
+  async function drawDiagrams() {
+    const diagrams = [...document.querySelectorAll<HTMLElement>('pre.mermaid:not([data-processed])')];
+    if (!diagrams.length) return;
+    const mermaid = await loadMermaid();
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'default',
+      securityLevel: 'strict',
+      layout: 'elk',
+      flowchart: { defaultRenderer: 'elk' },
+      state: { defaultRenderer: 'elk' },
+      elk: { considerModelOrder: 'NONE', mergeEdges: false },
+    });
+    for (const diagram of diagrams) {
+      // The source is kept, because a change of the theme draws the diagram again.
+      diagram.dataset.diagram ??= diagram.textContent ?? '';
+      const id = `mermaid-${Math.random().toString(36).slice(2, 11)}`;
+      delete diagram.dataset.notesError;
+      try {
+        diagram.innerHTML = (await mermaid.render(id, diagram.dataset.diagram)).svg;
+      } catch (error) {
+        console.error(error);
+        diagram.textContent = `Error rendering diagram: ${error instanceof Error ? error.message : error}`;
+        diagram.dataset.notesError = '';
+        // Mermaid draws in a block at the end of the page, and leaves it there when the source is wrong.
+        document.getElementById(`d${id}`)?.remove();
+      }
+      // The tools below wait for this attribute.
+      diagram.dataset.processed = 'true';
+    }
+  }
+
+  // Mermaid only loads on a page with a diagram. A diagram takes the colours of the theme when it
+  // is drawn, so a change of the theme draws all of them again, one pass after another.
+  function installDiagrams() {
+    let drawing = Promise.resolve();
+    const draw = () => {
+      drawing = drawing.then(drawDiagrams).catch((error) => console.error(error));
+    };
+    draw();
+    new MutationObserver(() => {
+      for (const diagram of document.querySelectorAll('pre.mermaid[data-processed]')) {
+        diagram.removeAttribute('data-processed');
+      }
+      draw();
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  }
+
   function installMermaidTools() {
     const prepare = () => {
       for (const diagram of document.querySelectorAll<HTMLElement>('pre.mermaid[data-processed]')) {
@@ -555,6 +622,7 @@ import Default from '@astrojs/starlight/components/Head.astro';
     installWideTables();
     installSectionFolding();
     installMermaidTools();
+    installDiagrams();
     requestAnimationFrame(installSidebarResizers);
   });
 </script>

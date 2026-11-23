@@ -23,4 +23,6 @@ test('the local static server resolves clean routes and rejects traversal', (t) 
   assert.equal(resolveStaticFile(root, '/../outside'), undefined);
   assert.equal(resolveStaticFile(root, '/%2e%2e/outside'), undefined);
   assert.equal(contentType(path.join(root, 'topic', 'note.md')), 'text/plain; charset=utf-8');
+  // A browser runs a module only when it comes as a script.
+  assert.equal(contentType(path.join(root, 'chunk.mjs')), 'text/javascript; charset=utf-8');
 });

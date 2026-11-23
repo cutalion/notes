@@ -1118,13 +1118,36 @@ h1#_top {
   transition: none;
 }
 
+/* Until Mermaid has drawn a diagram, its source stands in a frame like the one of the picture. */
+pre.mermaid {
+  display: flex;
+  align-items: center;
+  /* A source line that is wider than the frame must scroll from its start. */
+  justify-content: safe center;
+  overflow: auto;
+  padding: var(--notes-space-2);
+  border: 1px solid var(--notes-color-line);
+  border-radius: var(--notes-radius-large);
+  background: var(--notes-color-panel);
+}
+
+/* The message about a wrong source repeats the source, and reads as text from its first letter. */
+pre.mermaid[data-notes-error] {
+  display: block;
+  white-space: pre-wrap;
+}
+
+pre.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
 .mermaid-viewport > .mermaid-pane > pre.mermaid {
   min-width: 100%;
-  margin: 0 !important;
-  padding-block: var(--notes-space-2);
-  border: 0 !important;
+  margin: 0;
+  border: 0;
   border-radius: 0;
-  background: transparent !important;
+  background: transparent;
 }
 
 .mermaid-block:fullscreen {

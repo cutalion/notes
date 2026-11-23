@@ -21,7 +21,7 @@ It renders every note and lists each link to a missing note, heading, attachment
 
 Do not start `notes dev` or `notes serve` to check a note. They are servers and do not exit. Start one only when the user asks to see the site, and then run it in the background and give the user the address that it prints.
 
-The first build in a repository takes about ten seconds and about 1.2GB of memory. Later builds take about a second.
+The first build in a repository takes about five seconds and about 800MB of memory. Later builds take about a second.
 
 The tool writes everything to `.notes`. That folder ignores itself in git. Do not edit it, commit it, or add it to `.gitignore`.
 

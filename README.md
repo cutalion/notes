@@ -97,7 +97,7 @@ Link an image or another binary file the same way. The site serves a repository 
 
 Everything goes to the output folder, `.notes` by default: the page shell, the rendered pages, the caches, and the search index. The folder ignores itself in git, so your `.gitignore` stays as it is. Each notes folder has its own pages, caches, and search index in `sites/<folder>` there, so two folders of one repository can be served at the same time. You can delete the output folder at any time. The next run builds it again.
 
-The first run, and the first run after an update of `notes`, builds the page shell with Astro. That takes about ten seconds and about 1.2GB of memory. After that, Astro does not run: `notes dev` starts in a few seconds, stays under 200MB, and shows a changed note in about a second.
+The first run, and the first run after an update of `notes`, builds the page shell with Astro. That takes about five seconds and about 800MB of memory. After that, Astro does not run: `notes dev` starts in a few seconds, stays under 200MB, and shows a changed note in about a second.
 
 ## Develop
 

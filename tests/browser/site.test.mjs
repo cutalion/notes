@@ -473,6 +473,8 @@ test('a heading folds its section, the choice persists, and a link opens the sec
   const fold = (id) => page.locator(`.sl-heading-wrapper:has(#${id}) .notes-fold`);
   const visible = (id) => page.locator(`#${id}`).isVisible();
   await fold('checkout').waitFor({ state: 'attached' });
+  // A diagram that is drawn moves the text below it, and the pointer must stay on the heading.
+  await page.waitForFunction(() => document.querySelectorAll('.mermaid-block').length === document.querySelectorAll('pre.mermaid').length);
 
   // The mark hangs in the margin, to the left of the edge of the text, and shows on hover.
   const heading = page.locator('.sl-heading-wrapper:has(#checkout)');

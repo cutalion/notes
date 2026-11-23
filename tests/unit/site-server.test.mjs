@@ -80,6 +80,23 @@ test('resolves shell assets but not the shell marker pages', (t) => {
   assert.equal(resolve('/notespathmarker/'), undefined);
 });
 
+test('serves the modules of the diagram library from its packages, and nothing else from there', (t) => {
+  const { resolve } = siteFixture(t);
+  const packages = path.resolve(import.meta.dirname, '../../node_modules');
+
+  assert.deepEqual(resolve('/_mermaid/mermaid.esm.min.mjs'), {
+    kind: 'file',
+    file: path.join(packages, 'mermaid', 'dist', 'mermaid.esm.min.mjs'),
+  });
+  assert.deepEqual(resolve('/_mermaid-layout-elk/mermaid-layout-elk.esm.min.mjs'), {
+    kind: 'file',
+    file: path.join(packages, '@mermaid-js', 'layout-elk', 'dist', 'mermaid-layout-elk.esm.min.mjs'),
+  });
+  assert.equal(resolve('/_mermaid/mermaid.min.js'), undefined);
+  assert.equal(resolve('/_mermaid/%2e%2e/package.json'), undefined);
+  assert.equal(resolve('/_mermaid/%2e%2e/%2e%2e/@mermaid-js/layout-elk/dist/mermaid-layout-elk.esm.min.mjs'), undefined);
+});
+
 function occupiedPort(t) {
   return new Promise((resolve) => {
     const blocker = net.createServer().listen(0, '127.0.0.1', () => resolve(blocker.address().port));

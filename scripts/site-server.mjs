@@ -3,7 +3,7 @@ import http from 'node:http';
 import path from 'node:path';
 
 import { notePageFile } from './pages.mjs';
-import { notesRoot, repoRoot } from './paths.mjs';
+import { dependencyRoot, notesRoot, repoRoot } from './paths.mjs';
 import { fillSourcePage } from './render-source.mjs';
 import { currentSearchDir } from './search-index.mjs';
 import { insertSidebar, sidebarFile } from './sidebar.mjs';
@@ -12,6 +12,13 @@ import { resolveStaticFile, sendFile } from './static-server.mjs';
 
 const sourceShellPage = path.join('source', 'sourcepathmarker', 'index.html');
 const defaultRoots = { notesRoot, repoRoot };
+// The browser loads Mermaid and its ELK layout as their packages ship them: prebuilt modules that
+// find each other by relative paths. Bundling them into the shell took most of the time and of
+// the memory of its build.
+const diagramModules = [
+  ['/_mermaid/', path.join(dependencyRoot('mermaid'), 'dist')],
+  ['/_mermaid-layout-elk/', path.join(dependencyRoot('@mermaid-js/layout-elk'), 'dist')],
+];
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -49,6 +56,14 @@ function linkedSource(index, pathname, repoRoot) {
   return { repoRelative, target, exists: isFile(target) };
 }
 
+// Only the modules are public: the packages keep tests and source maps in the same folders.
+function diagramModule(pathname) {
+  if (!pathname.endsWith('.mjs')) return;
+  for (const [prefix, root] of diagramModules) {
+    if (pathname.startsWith(prefix)) return resolveStaticFile(root, pathname.slice(prefix.length - 1));
+  }
+}
+
 // Says what a URL serves: a file to send, a note page, or a source page to render. The server
 // and the link check of the build both ask here, so a link is valid exactly when it is served.
 export function resolveSiteRoute({ requestUrl, index, shellRoot, pagesRoot, searchDir, roots = defaultRoots }) {
@@ -60,6 +75,9 @@ export function resolveSiteRoute({ requestUrl, index, shellRoot, pagesRoot, sear
     const file = searchDir && resolveStaticFile(searchDir, pathname.slice('/pagefind'.length));
     if (file) return { kind: 'file', file };
   }
+
+  const diagramFile = diagramModule(pathname);
+  if (diagramFile) return { kind: 'file', file: diagramFile };
 
   const siteFile = resolveSiteFile(index, requestUrl, roots);
   if (siteFile) return { kind: 'file', file: siteFile };

@@ -29,7 +29,6 @@
     "@astrojs/starlight": "0.41.10",
     "@mermaid-js/layout-elk": "0.2.3",
     "astro": "7.2.9",
-    "astro-mermaid": "2.1.0",
     "chokidar": "4.0.3",
     "esbuild": "0.28.2",
     "mdast-util-from-markdown": "2.0.3",
