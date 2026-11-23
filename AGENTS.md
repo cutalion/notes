@@ -60,7 +60,8 @@ Run the unit tests and the browser tests before you say that a change works. A c
 - **Generated pages have no copy button.** `withoutCopyActions()` in `scripts/shell.mjs` cuts the block that starts with `<div class="notes-copy-actions `. Keep that opening tag as it is, or change both places.
 - **The markers in the shell are plain strings**, such as `notespathmarker` and `notestitlemarker`. `scripts/shell.mjs` replaces them, and a component must not change them on the way.
 - **Mermaid is served, not bundled.** The page script in `Head.astro` imports `/_mermaid/` and `/_mermaid-layout-elk/` by a path in a variable, and `scripts/site-server.mjs` serves those paths from the `dist` folders of the two packages. An import that Vite can follow puts the library back into the shell build, which then takes twice the time and the memory.
-- **A Mermaid title is taken at build time.** `mermaidTitle()` in `scripts/render-note.mjs` moves a front matter `title` out of the source, so that the picture does not repeat the header of its block.
+- **A Mermaid title is taken at build time.** `mermaidTitle()` in `scripts/render-note.mjs` moves a front matter `title` out of the source, so that the picture does not repeat the header of its block. The copy button must still give the source with the title, so such a diagram carries the whole source in `data-notes-source`.
+- **A folded diagram has no size.** `fit()` in `Head.astro` skips it and runs when the diagram unfolds. A diagram is remembered as folded by a hash of its source.
 
 ## Conventions
 

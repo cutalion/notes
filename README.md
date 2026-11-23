@@ -7,7 +7,7 @@
 | | | |
 |---|---|---|
 | ![A table that fits in the column and a wider one that grows into the margins](.github/screenshots/tables.png) | ![A sequence diagram in a frame with its title and zoom controls](.github/screenshots/diagram.png) | ![Folded sections and the notes tree floating over the text](.github/screenshots/folding.png) |
-| Tables fit in the text column when they can and grow into the margins when they cannot. | Diagrams are drawn in the palette of the site, with a title, zoom, and full screen. | Sections fold by their headings, and an unpinned tree floats in on hover. |
+| Tables fit in the text column when they can and grow into the margins when they cannot. | Diagrams are drawn in the palette of the site, with a title, zoom, and full screen. They fold, and give their source to the clipboard. | Sections fold by their headings, and an unpinned tree floats in on hover. |
 
 ## Install
 

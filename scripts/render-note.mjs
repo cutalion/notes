@@ -78,8 +78,11 @@ function remarkMermaid() {
     visit(tree, 'code', (node, index, parent) => {
       if (node.lang !== 'mermaid') return;
       const { title, code } = mermaidTitle(node.value);
-      const attribute = title ? ` data-notes-title="${escapeHtml(title).replaceAll('"', '&quot;')}"` : '';
-      parent.children[index] = { type: 'html', value: `<pre class="mermaid"${attribute}>${escapeHtml(code)}</pre>` };
+      const attribute = (name, value) => ` data-notes-${name}="${escapeHtml(value).replaceAll('"', '&quot;')}"`;
+      // The copy button gives the source as the author wrote it. When the title has left the
+      // source, the page carries the whole source next to the one that Mermaid draws.
+      const attributes = (title ? attribute('title', title) : '') + (code === node.value ? '' : attribute('source', node.value));
+      parent.children[index] = { type: 'html', value: `<pre class="mermaid"${attributes}>${escapeHtml(code)}</pre>` };
     });
   };
 }

@@ -1016,7 +1016,7 @@ h1#_top {
   box-shadow: 1px 0 0 var(--notes-color-line);
 }
 
-/* Diagrams: a frame with a thin header, the caption on the left and the zoom on the right */
+/* Diagrams: a frame with a thin header, the caption on the left and the tools on the right */
 
 .mermaid-block {
   max-width: 100%;
@@ -1031,9 +1031,52 @@ h1#_top {
   align-items: center;
   justify-content: space-between;
   gap: var(--notes-space-1);
-  padding-block: calc(var(--notes-space-1) / 2);
-  padding-inline: var(--notes-space-2) calc(var(--notes-space-1) / 2);
+  padding: calc(var(--notes-space-1) / 2);
   border-block-end: 1px solid var(--notes-color-line);
+}
+
+/* The caption with its mark folds the diagram: only the header stays, with the copy button. */
+.mermaid-fold {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--notes-space-1);
+  min-width: 0;
+  min-height: var(--notes-control-height);
+  margin: 0 !important;
+  padding: 0 var(--notes-space-1);
+  border: 0;
+  border-radius: var(--notes-radius-small);
+  background: transparent;
+  color: var(--notes-color-muted);
+  cursor: pointer;
+  text-align: start;
+}
+
+.mermaid-fold:hover {
+  background: var(--notes-color-hover);
+}
+
+.mermaid-fold:active {
+  background: var(--notes-color-pressed);
+}
+
+.mermaid-fold svg {
+  flex: none;
+  transition: rotate 0.12s;
+}
+
+.mermaid-fold[aria-expanded='false'] svg {
+  rotate: -90deg;
+}
+
+.mermaid-block[data-notes-collapsed] .mermaid-header {
+  border-block-end: 0;
+}
+
+@media not print {
+  .mermaid-block[data-notes-collapsed] :is(.mermaid-viewport, [data-mermaid-action]:not([data-mermaid-action='copy'])) {
+    display: none;
+  }
 }
 
 .mermaid-caption {
@@ -1047,11 +1090,15 @@ h1#_top {
 
 .mermaid-tools {
   display: flex;
+  flex: none;
   align-items: center;
   gap: 2px;
+  /* Starlight puts a space above a block that follows a button. */
+  margin-block-start: 0;
 }
 
 .mermaid-tools button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1075,7 +1122,7 @@ h1#_top {
   background: var(--notes-color-pressed);
 }
 
-.mermaid-tools svg {
+.mermaid-header svg {
   width: var(--notes-icon-size);
   height: var(--notes-icon-size);
   fill: none;
@@ -1245,6 +1292,7 @@ pre.mermaid svg text.sequenceNumber {
 
 @media print {
   .mermaid-tools,
+  .mermaid-fold svg,
   .notes-sidebar-resizer {
     display: none;
   }

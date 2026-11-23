@@ -123,7 +123,7 @@ test('theme switching persists and rerenders Mermaid', async () => {
   await page.waitForFunction(() => document.querySelectorAll('.mermaid-viewport').length === 3);
   assert.equal(await page.locator('.mermaid-viewport').count(), 3);
   const block = page.locator('.mermaid-block').first();
-  assert.equal(await block.locator('.mermaid-header .mermaid-tools button').count(), 4);
+  assert.equal(await block.locator('.mermaid-header .mermaid-tools button').count(), 5);
   assert.equal(await block.locator('.mermaid-caption').textContent(), 'Diagram');
 
   const viewport = block.locator('.mermaid-viewport');
@@ -622,6 +622,56 @@ test('mobile keeps Starlight drawers and hides the panel buttons', async () => {
   assert.equal(await page.locator('#starlight__sidebar').isVisible(), true);
   assert.equal(await page.locator('#notes-sidebar-sort').isVisible(), true);
   await page.close();
+});
+
+test('a diagram folds to its header, the choice persists, and its source is copied in its code fence', async () => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await context.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: async (value) => { window.__copiedDiagram = value; },
+      },
+    });
+  });
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/guide/order-lifecycle/`);
+  await page.waitForFunction(() => document.querySelectorAll('.mermaid-block').length === document.querySelectorAll('pre.mermaid').length);
+  const block = page.locator('.mermaid-block').nth(2);
+  const fold = block.locator('.mermaid-fold');
+  const copy = block.locator('[data-mermaid-action="copy"]');
+  await block.and(page.locator('[data-wide]')).waitFor();
+  const column = await page.locator('.sl-markdown-content').evaluate((element) => element.getBoundingClientRect().width);
+
+  // The caption folds the diagram. The picture and the zoom leave, the copy button stays, and
+  // the header of a diagram that stood in the margins returns to the column.
+  await fold.click();
+  assert.equal(await fold.getAttribute('aria-expanded'), 'false');
+  assert.equal(await block.locator('.mermaid-viewport').isVisible(), false);
+  assert.equal(await block.locator('[data-mermaid-action="in"]').isVisible(), false);
+  assert.equal(await copy.isVisible(), true);
+  assert.equal(await block.evaluate((element) => element.getBoundingClientRect().width), column);
+  assert.equal(await page.locator('.mermaid-block').nth(1).locator('.mermaid-viewport').isVisible(), true);
+
+  await page.reload();
+  await page.waitForFunction(() => document.querySelectorAll('.mermaid-block').length === document.querySelectorAll('pre.mermaid').length);
+  assert.equal(await fold.getAttribute('aria-expanded'), 'false');
+  assert.equal(await block.locator('.mermaid-viewport').isVisible(), false);
+
+  // An unfolded diagram measures itself again: it is back in the margins with a picture of a size.
+  await fold.click();
+  await block.and(page.locator('[data-wide]')).waitFor();
+  const picture = await block.locator('pre.mermaid svg').boundingBox();
+  assert.ok(picture.width > column / 2 && picture.height > 100, JSON.stringify(picture));
+  assert.equal(await page.evaluate(() => localStorage.getItem(`notes:foldedDiagrams:${location.pathname}`)), null);
+
+  // The copied source stands in its code fence, with the title that the build moved into the header.
+  await page.locator('.mermaid-block').first().locator('[data-mermaid-action="copy"]').click();
+  await page.waitForFunction(() => window.__copiedDiagram === '```mermaid\n---\ntitle: The four steps of an order\n---\nflowchart LR\n  Cart --> Order --> Payment --> Shipment\n```');
+  await page.locator('.mermaid-block').first().locator('[data-mermaid-action="copy"][data-copied]').waitFor();
+  await page.locator('.mermaid-block').nth(1).locator('[data-mermaid-action="copy"]').click();
+  await page.waitForFunction(() => window.__copiedDiagram.startsWith('```mermaid\nsequenceDiagram\n  participant Worker') && window.__copiedDiagram.endsWith('authorization id\n```'));
+  await context.close();
 });
 
 test('note actions copy raw Markdown and the project-relative file path', async () => {

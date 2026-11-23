@@ -67,6 +67,16 @@ test('renders a note body with Starlight asides, heading links, highlighted code
   assert.doesNotMatch(html, /Renderer fixture/);
 });
 
+test('a diagram whose title left its source carries the whole source for the copy button', async (t) => {
+  const root = temporaryDirectory(t, 'notes-root-');
+  const file = path.join(root, 'note.md');
+  fs.writeFileSync(file, '---\ntitle: Diagrams\n---\n\n```mermaid\n---\ntitle: Order steps\n---\nflowchart LR\n  A --> B\n```\n');
+  const renderer = await createNoteRenderer({ root, cacheRoot: temporaryDirectory(t, 'notes-cache-') });
+
+  const { html } = await renderer.render(file);
+  assert.match(html, /<pre class="mermaid" data-notes-title="Order steps" data-notes-source="---\ntitle: Order steps\n---\nflowchart LR\n  A --> B">flowchart LR\n  A --> B<\/pre>/);
+});
+
 test('reuses the cached render until the note changes', async (t) => {
   const root = temporaryDirectory(t, 'notes-root-');
   const cacheRoot = temporaryDirectory(t, 'notes-cache-');

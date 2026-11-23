@@ -126,7 +126,7 @@ The header is thin and always on the screen. It holds what belongs to the whole 
 | The tree: sorting | Above the tree |
 | The note: "Copy page" and its menu | In the header, in the right group |
 | A section: folding | In the margin, to the left of its heading |
-| A block: the zoom of a diagram | In the header of the block itself |
+| A block: the fold, the copy, and the zoom of a diagram | In the header of the block itself |
 
 Rules:
 
@@ -188,7 +188,8 @@ Code, diagrams, tables, and callouts are part of the text: they stand in the tex
 - **On a narrow screen and in print** there are no margins, so only the first and the third steps remain.
 - **Inline code** is set in monospace slightly smaller than the text, on a quiet background that still shows the edges of the identifier. It does not increase the line height.
 - **A table** has no frame and no fill: a thin line separates the rows, and the column headings are set as captions, small and muted. The first and the last cells stand on the edges of the column, as the lines of text do.
-- **A diagram** stands in a frame with its own thin header: the caption on the left, the zoom controls on the right. The buttons there have the same height as the other buttons in the note.
+- **A diagram** stands in a frame with its own thin header: the caption on the left, the copy button and the zoom controls on the right. The buttons there have the same height as the other buttons in the note.
+- **A diagram folds.** The caption with a disclosure mark before it is the button. A folded diagram is its header alone, in the text column, with the copy button: the zoom has nothing to act on. The copy button gives the source of the diagram as the author wrote it, in its `mermaid` code fence, and says so the way the copy button of a code block does.
 - **A callout** is a light background, an icon, and a semibold title. It is not brighter or more contrasting than the text around it.
 - **Lists.** The space between items is half the space between paragraphs.
 - **A section** reads as a unit: a line and a large space separate its heading from the text above.
@@ -211,7 +212,7 @@ Behaviour:
 
 - **The width of the panels** changes when the reader drags the border. The border looks like an ordinary thin line, and the cursor tells that it can be dragged.
 - **Width limits.** A panel cannot be narrowed until it is unreadable, or widened until it is wider than the text column.
-- **Memory.** The pinning of the panels, their width, the width of the text column, and the sort order persist between notes. Folded sections persist for their note.
+- **Memory.** The pinning of the panels, their width, the width of the text column, and the sort order persist between notes. Folded sections and folded diagrams persist for their note.
 - **Motion.** Only the appearance and disappearance of layers is animated, briefly. The text of the note does not shift.
 - **Keyboard.** Everything that opens with the mouse also opens from the keyboard.
 

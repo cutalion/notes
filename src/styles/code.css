@@ -65,7 +65,9 @@
   stroke-linejoin: round;
 }
 
-.notes-code-copy[data-copied]::after {
+/* The copy button of a diagram says the same in the same way. */
+.notes-code-copy[data-copied]::after,
+.mermaid-tools [data-copied]::after {
   content: 'Copied!';
   position: absolute;
   right: calc(100% + var(--notes-space-1));
@@ -76,4 +78,10 @@
   color: var(--notes-color-body);
   font-size: var(--notes-text-control);
   white-space: nowrap;
+}
+
+/* The buttons of a diagram are set in monospace for `1:1`, and the message is ordinary words. */
+.mermaid-tools [data-copied]::after {
+  font-family: var(--__sl-font);
+  font-weight: 400;
 }

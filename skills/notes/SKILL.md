@@ -87,7 +87,7 @@ Use backticks for names of classes, methods, files, columns, and statuses in the
 
 ## Diagrams
 
-A `mermaid` code fence becomes a diagram in a frame with zoom and full screen. Give every diagram a title. The frame shows it in its header.
+A `mermaid` code fence becomes a diagram in a frame with zoom and full screen. Give every diagram a title. The frame shows it in its header, and a click on it folds the diagram. A button in the frame copies the Mermaid source in its code fence.
 
 ````markdown
 ```mermaid
